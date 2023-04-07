@@ -27,3 +27,12 @@ docker run -it --rm \
     -e AWS_PROFILE=devseed \
     --gpus all sam-geo 
 ```
+
+### Run the streamlit app
+```
+# pass in the model checkpoint and model type in `app.py`
+MODEL_CHECKPOINT=<sam-checkpoint-weights> 
+MODEL_TYPE=<vit_b | vit_l | vit_h>
+
+streamlit run app.py
+```

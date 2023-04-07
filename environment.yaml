@@ -25,3 +25,10 @@ dependencies:
         - torch==2.0
         - pytorch-lightning==2.0
         - torchvision
+        - matplotlib
+        - planetary-computer
+        - pystac
+        - pystac-client
+        - streamlit
+        - streamlit-image-coordinates
+        - mercantile
