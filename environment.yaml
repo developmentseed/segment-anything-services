@@ -23,6 +23,7 @@ dependencies:
     - pip:
         - git+https://github.com/facebookresearch/segment-anything.git
         - pycocotools
+        - torch-model-archiver
         # - torch==2.0
         # - pytorch-lightning==2.0
         # - torchvision
