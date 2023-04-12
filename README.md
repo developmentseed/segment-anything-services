@@ -2,9 +2,25 @@ WIP for deploying SAM
 
 Scripts and the sam model notebook are from https://github.com/facebookresearch/segment-anything/tree/main
 
+### Downloading model weights
+
+If you have access, download from the devseed s3:
+
+```
+aws s3 sync model-weights s3://segment-anything/model-weights/
+```
+
+otherwise, get checkpoints from the original repo: https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints
+
+### Exporting the ONNX model for CPU encoding
+
+```
+python scripts/export_onnx_model.py --checkpoint <path/to/checkpoint> --model-type <model_type> --output <path/to/output>
+```
+
 ### Building container to explore 
 
-Download the [weights](https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints), run inference on satellite images, run a jupyter notebook server
+, run inference on satellite images, run a jupyter notebook server
 
 ```
 docker build -t sam-geo -f Dockerfile-dev .
