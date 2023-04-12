@@ -1,2 +1,1 @@
-# $1 is the path to the dir holding the .mar file with the onnx model. there should be only one .mar file
 docker run -it -p 8080:8080 -p 8081:8081 -p 8082:8082 -v $(pwd)/model_store:/home/model-server/model_store --gpus all torchserve-sam-gpu:latest serve

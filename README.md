@@ -40,7 +40,7 @@ mv sam_vit_h_decode.mar model_store/sam_vit_h_decode.mar
 ```
 
 
-### 3. Building the gpu torchserve container for image encoding
+### 3a. Building the gpu torchserve container for image encoding
 With the GPU, inference time should be about 1.8 seconds or less depending on the GPU. On an older 1080 Ti Pascal GPU, inference time is 1.67 seconds without compilation.
 
 ```
@@ -48,6 +48,13 @@ docker build -t torchserve-sam-gpu .
 bash start_serve.sh $(pwd)/model_store
 ```
 
+### 3b. Building the cpu torchserve container for image decoding WIP
+With the CPU, inference time should be about 1.8 seconds or less depending on the GPU. On an older 1080 Ti Pascal GPU, inference time is 1.67 seconds without compilation.
+
+```
+docker build -t torchserve-sam-cpu -f Dockerfile-cpu .
+bash start_serve_cpu.sh $(pwd)/model_store
+```
 
 ### 4. Building jupyter server container
 
