@@ -1,8 +1,6 @@
 name: segment-geo
 channels:
     - conda-forge
-    - pytorch
-    - nvidia
 dependencies:
     - httpx
     - ipykernel
@@ -14,14 +12,18 @@ dependencies:
     - pandas
     - pillow
     - pip
-    - pytorch-cuda==11.7
     - pystac-client
     - rasterio
     - scikit-image
     - tensorboard
+    - cudatoolkit
+    - pytorch==2.0
+    - pytorch-lightning==2.0
+    - torchvision
     - pip:
         - git+https://github.com/facebookresearch/segment-anything.git
         - pycocotools
-        - torch==2.0
-        - pytorch-lightning==2.0
-        - torchvision
+        - torch-model-archiver
+        # - torch==2.0
+        # - pytorch-lightning==2.0
+        # - torchvision
