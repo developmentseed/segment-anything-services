@@ -1,3 +1,9 @@
 .ipynb_checkpoints/
 model-weights/
 models/
+model_store_decode/
+model_store_encode/
+notebooks/handler.ipynb
+grafana-enterprise_9.4.7_amd64.deb
+.devcontainer/
+.vscode/

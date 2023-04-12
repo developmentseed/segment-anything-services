@@ -15,9 +15,9 @@ otherwise, get checkpoints from the original repo: https://github.com/facebookre
 This step takes a long time presumably because the uncompiled weights are massive. Packaging the ONNX model is faster in the later steps. TODO figure out how to compile the encoder step.
 
 ```
-mkdir -p model_store
-torch-model-archiver --model-name sam_vit_h_encode --version 1.0.0 --serialized-file model-weights/sam_vit_h_4b8939.pth --handler handler.py 
-mv sam_vit_h_encode.mar model_store/sam_vit_h_encode.mar
+mkdir -p model_store_encode
+torch-model-archiver --model-name sam_vit_h_encode --version 1.0.0 --serialized-file model-weights/sam_vit_h_4b8939.pth --handler handler_encode.py 
+mv sam_vit_h_encode.mar model_store_encode/sam_vit_h_encode.mar
 ```
 
 ### 2b. Exporting the ONNX model for CPU decoding
@@ -29,12 +29,12 @@ python scripts/export_onnx_model.py --checkpoint model-weights/sam_vit_h_4b8939.
 
 ### 2c. Package the ONNX model for CPU encoding with the handler
 
-We'll put this in the model_store directory, to keep the onnx model files distinct from the torchserve .mar model archives. model_store/ is created automatically by Torchserve in the container, which is why we're make a local folder here called "model_store".
+We'll put this in the model_store_decode directory, to keep the onnx model files distinct from the torchserve .mar model archives. model_store/ is created automatically by Torchserve in the container, which is why we're make a local folder here called "model_store_decode".
 
 ```
-mkdir -p model_store
-torch-model-archiver --model-name sam_vit_h_decode --version 1.0.0 --serialized-file models/sam_vit_h_decode.onnx --handler handler.py
-mv sam_vit_h_decode.mar model_store/sam_vit_h_decode.mar
+mkdir -p model_store_decode
+torch-model-archiver --model-name sam_vit_h_decode --version 1.0.0 --serialized-file models/sam_vit_h_decode.onnx --handler handler_decode.py
+mv sam_vit_h_decode.mar model_store_decode/sam_vit_h_decode.mar
 ```
 
 
@@ -43,15 +43,14 @@ With the GPU, inference time should be about 1.8 seconds or less depending on th
 
 ```
 docker build -t torchserve-sam-gpu .
-bash start_serve_encode_gpu.sh $(pwd)/model_store
+bash start_serve_encode_gpu.sh $(pwd)/model_store_encode
 ```
 
-### 3b. Building the cpu torchserve container for image decoding WIP
-With the CPU, inference time should be about 1.8 seconds or less depending on the GPU. On an older 1080 Ti Pascal GPU, inference time is 1.67 seconds without compilation.
+### 3b. Building the cpu torchserve container for image decoding
 
 ```
 docker build -t torchserve-sam-cpu -f Dockerfile-cpu .
-bash start_serve_decode_cpu.sh $(pwd)/model_store
+bash start_serve_decode_cpu.sh $(pwd)/model_store_decode
 ```
 
 ### 4. Building jupyter server container
@@ -85,5 +84,5 @@ Follow https://github.com/pytorch/serve/issues/2223
 Use this to start the container rather than `bash start_serve.sh` `serve`
 
 ```
-docker run -it -p 8080:8080 -v $(pwd)/model_store:/home/model-server/model_store torchserve-sam:latest bash
+docker run -it -p 8080:8080 -v $(pwd)/model_store_encode/home/model-server/model_store_encode torchserve-sam:latest bash
 ```
