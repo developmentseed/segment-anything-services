@@ -45,7 +45,7 @@ With the GPU, inference time should be about 1.8 seconds or less depending on th
 
 ```
 docker build -t torchserve-sam-gpu .
-bash start_serve.sh $(pwd)/model_store
+bash start_serve_encode_gpu.sh $(pwd)/model_store
 ```
 
 ### 3b. Building the cpu torchserve container for image decoding WIP
@@ -53,7 +53,7 @@ With the CPU, inference time should be about 1.8 seconds or less depending on th
 
 ```
 docker build -t torchserve-sam-cpu -f Dockerfile-cpu .
-bash start_serve_cpu.sh $(pwd)/model_store
+bash start_serve_decode_cpu.sh $(pwd)/model_store
 ```
 
 ### 4. Building jupyter server container

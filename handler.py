@@ -43,6 +43,8 @@ class ModelHandler(BaseHandler):
         start = time()
         row = data[0]
         image = row.get("data") or row.get("body")
+        if isinstance(image, dict) and "encoded_image" in image:
+            image = image['encoded_image']
         if isinstance(image, str):
             image = base64.b64decode(image)
         if isinstance(image, (bytearray, bytes)):
