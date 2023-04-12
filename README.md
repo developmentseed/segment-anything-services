@@ -1,6 +1,4 @@
-WIP for deploying SAM
-
-Scripts and the sam model notebook are from https://github.com/facebookresearch/segment-anything/tree/main
+# Running the Segment Anything Encoder and Decoder as Services
 
 ### 1. Downloading model weights
 
