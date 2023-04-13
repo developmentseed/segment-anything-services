@@ -67,9 +67,9 @@ docker build -t sam-dev -f Dockerfile-dev .
 
 ### 5. Test the endpoints
 
-You can run `test_endpoint.ipynb` to then use the two running services you started above.
+You can run `test_endpoint.ipynb` to then use the two running services you started above. The dependencies are minimal for this notebook, install them on your own or you can run them in the jupyter server below.
 
-### 5. Run jupyter server container
+### 6. Run jupyter server container
 
 This is a GPU enabled container that is set up with SAM and some other dependencies we commonly use. You can use it to try out SAM model in a notebook environment. Remove the `--gpus` arg if you don't have a GPU.
 
