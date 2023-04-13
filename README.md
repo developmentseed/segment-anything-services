@@ -1,5 +1,9 @@
 # Running the Segment Anything Encoder and Decoder as Services
 
+This project contains two seperate Torchserve services, one for the encoder (best run on a GPU) and the decoder (CPU). Check out the [original repo](https://github.com/facebookresearch/segment-anything) for more info.
+
+## Setup
+
 ### 1. Downloading model weights
 
 If you have access, download from the devseed s3:
@@ -12,7 +16,7 @@ otherwise, get checkpoints from the original repo: https://github.com/facebookre
 
 ### 2a. Package the torch weights for GPU encoding
 
-This step takes a long time presumably because the uncompiled weights are massive. Packaging the ONNX model is faster in the later steps. TODO figure out how to compile the encoder step.
+This step takes a long time presumably because the uncompiled weights are massive. Packaging the ONNX model is faster in the later steps.
 
 ```
 mkdir -p model_store_encode
@@ -58,31 +62,40 @@ bash start_serve_decode_cpu.sh $(pwd)/model_store_decode
 Use this container to test the model in a GPU enabled jupyter notebook server with geospatial and pytorch dependencies installed.
 
 ```
-docker build -t sam-geo-dev -f Dockerfile-dev .
+docker build -t sam-dev -f Dockerfile-dev .
 ```
 
+### 5. Test the endpoints
 
-### Run jupyter server container
+You can run `test_endpoint.ipynb` to then use the two running services you started above.
 
-Remove the `--gpus` arg if you don't have a GPU
+### 5. Run jupyter server container
+
+This is a GPU enabled container that is set up with SAM and some other dependencies we commonly use. You can use it to try out SAM model in a notebook environment. Remove the `--gpus` arg if you don't have a GPU.
 
 ```
 docker run -it --rm \
     -v $HOME/.aws:/root/.aws \
-    -v "$(pwd)":/segment-anything-geo \
+    -v "$(pwd)":/segment-anything-services \
     -p 8888:8888 \
     -e AWS_PROFILE=devseed \
-    --gpus all sam-geo-dev
+    --gpus all sam-dev
 ```
 
-### Misc
-Debugging Torchserve in VSCode with dev containers extension
+### (Potentially) Frequently Asked Questions
+Q: Why two services?
 
+A: We're exploring cost effective ways to run image encoding in a separate, on-demand way from the CPU decoder. Eventually we'd like to remove the need for the CPU torserve on the backend and run the decoding in the browser.
 
-Follow https://github.com/pytorch/serve/issues/2223
+Q: Can I contribute or ask questions?
+A: This is currently more of a "working in the open" type repo that we'd like to share with others, rather than a maintained project. But feel free to open an issue if you have an idea. Please understand if we don't respond or are slow to respond.
 
-Use this to start the container rather than `bash start_serve.sh` `serve`
+## License
 
-```
-docker run -it -p 8080:8080 -v $(pwd)/model_store_encode/home/model-server/model_store_encode torchserve-sam:latest bash
-```
+The model and code is licensed under the [Apache 2.0 license](LICENSE).
+
+## References
+
+Kirillov, A., Mintun, E., Ravi, N., Mao, H., Rolland, C., Gustafson, L., ... Girshick, R. (2023). Segment Anything. *arXiv:2304.02643*. https://github.com/facebookresearch/segment-anything
+
+The scripts/export_onnx_model.ipynb and notebooks/sam_onnx_model_example_fox.ipynb are from the original repo.
