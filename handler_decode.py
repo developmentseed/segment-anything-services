@@ -4,25 +4,19 @@ from ts.torch_handler.base_handler import BaseHandler
 import numpy as np
 import base64
 import torch
-import io
-import torchvision
-import torch
 from PIL import Image
 from io import BytesIO
 from typing import Union
 import os
 from time import time
-from segment_anything import sam_model_registry, SamPredictor
+from segment_anything.utils.transforms import ResizeLongestSide
+import onnxruntime
 # import ptvsd
 
 # ptvsd.enable_attach(address=('0.0.0.0', 6789), redirect_output=True)
 # ptvsd.wait_for_attach()
 np.random.seed(42)
-torch.manual_seed(42)
 os.environ["PYTHONHASHSEED"] = "42"
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
-torch.set_num_threads(1)
 
 class ModelHandler(BaseHandler):
     """
@@ -42,20 +36,21 @@ class ModelHandler(BaseHandler):
         """
         start = time()
         row = data[0]
-        image = row.get("data") or row.get("body")
-        if isinstance(image, dict) and "encoded_image" in image:
-            image = image['encoded_image']
-        if isinstance(image, str):
-            image = base64.b64decode(image)
-        if isinstance(image, (bytearray, bytes)):
-            image = load_image(io.BytesIO(image))
+        self.payload = row.get("data") or row.get("body")
+        if isinstance(self.payload, dict) and "image_embeddings" in self.payload \
+            and "image_shape" in self.payload \
+            and "input_point" in self.payload \
+            and "input_label" in self.payload:
+            image_embeddings = self.payload['image_embeddings']
         else:
-            print("not a bytearray")
+            print("one of image_shape, input_point, input_label, image_embeddings payload dict keys missing.")
             assert False
-        image = np.asarray(image)
-        image = np.ascontiguousarray(image)
+        if isinstance(image_embeddings, str):
+            image_embeddings = base64.b64decode(image_embeddings)
+        image_embeddings = np.frombuffer(image_embeddings, dtype=np.float32)
+        image_embeddings = image_embeddings.reshape((1,256,64,64))
         print("XXXXX  Preprocess time: ", time()-start)
-        return image
+        return image_embeddings
 
     def initialize(self, context):
         """
@@ -68,29 +63,42 @@ class ModelHandler(BaseHandler):
         model_dir = properties.get("model_dir")
         self.device = torch.device("cuda:" + str(properties.get("gpu_id")) if torch.cuda.is_available() else "cpu")
         serialized_file = context.manifest['model']['serializedFile']
-        model_path = os.path.join(model_dir, serialized_file)
-        sam = sam_model_registry["default"](checkpoint=model_path)
-        sam.to(device=self.device)
-        self.predictor = SamPredictor(sam)
+        onnx_model_path = os.path.join(model_dir, serialized_file)
+        self.ort_session = onnxruntime.InferenceSession(onnx_model_path)
         self.initialized = True
         print("XXXXX  Initialization time: ", time()-start)
 
-    def inference(self, image):
+    def inference(self, image_embeddings):
         """
         Internal inference methods
         :param model_input: transformed model input data
         :return: list of inference output in NDArray
         """
         start = time()
-        # Do some inference call to engine here and return output
-        self.predictor.set_image(image)
-        image_embedding = self.predictor.get_image_embedding().cpu().numpy()
+        resizer = ResizeLongestSide(1024) # 1024 is the max for the export onnx example nb
+        onnx_coord = np.concatenate([np.array(self.payload['input_point'])[np.newaxis,:], np.array([[0.0, 0.0]])], axis=0)[None, :, :]
+        onnx_label = np.concatenate([np.array([self.payload['input_label']]), np.array([-1])], axis=0)[None, :].astype(np.float32)
+        onnx_coord = resizer.apply_coords(onnx_coord, self.payload['image_shape'][:2]).astype(np.float32)
+        onnx_mask_input = np.zeros((1, 1, 256, 256), dtype=np.float32)
+        onnx_has_mask_input = np.zeros(1, dtype=np.float32)
+        ort_inputs = {
+            "image_embeddings": image_embeddings,
+            "point_coords": onnx_coord,
+            "point_labels": onnx_label,
+            "mask_input": onnx_mask_input,
+            "has_mask_input": onnx_has_mask_input,
+            "orig_im_size": np.array(self.payload['image_shape'][:2], dtype=np.float32)
+        }
+        masks, _, low_res_logits = self.ort_session.run(None, ort_inputs)
         print("XXXXX  Inference time: ", time()-start)
-        return image_embedding
+        print("XXXXXXX masks shape", masks.shape)
+        # masks are not thresholded, threshold them client side with 
+        # masks = masks > predictor.model.mask_threshold
+        return masks
     
-    def postprocess(self, inference_output):
-        base64_encoded_embedding = base64.b64encode(inference_output).decode("utf-8")
-        return [{"status": "success", "image_embedding": base64_encoded_embedding}]
+    def postprocess(self, masks):
+        base64_encoded_masks = base64.b64encode(masks.flatten()).decode("utf-8")
+        return [{"status": "success", "masks": base64_encoded_masks}]
     
     def handle(self, data, context):
         """
