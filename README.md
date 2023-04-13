@@ -27,7 +27,7 @@ mkdir -p models
 python scripts/export_onnx_model.py --checkpoint model-weights/sam_vit_h_4b8939.pth --model-type vit_h --output models/sam_vit_h_decode.onnx
 ```
 
-### 2c. Package the ONNX model for CPU encoding with the handler
+### 2c. Package the ONNX model for CPU decoding with the handler
 
 We'll put this in the model_store_decode directory, to keep the onnx model files distinct from the torchserve .mar model archives. model_store/ is created automatically by Torchserve in the container, which is why we're make a local folder here called "model_store_decode".
 
