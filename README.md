@@ -9,7 +9,7 @@ This project contains two seperate Torchserve services, one for the encoder (bes
 If you have access, download from the devseed s3:
 
 ```
-aws s3 sync model-weights s3://segment-anything/model-weights/
+aws s3 sync s3://segment-anything/model-weights/ model-weights
 ```
 
 otherwise, get checkpoints from the original repo: https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints
