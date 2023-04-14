@@ -24,7 +24,7 @@ jobs:
                   ref: ${{github.event.pull_request.head.sha || github.sha}}
 
             - name: Docker Build Task
-              run: docker build -t segment-${{ matrix.task }} . -f Docker-${{matrix.task}}
+              run: docker build -t segment-${{ matrix.task }} . -f Dockerfile-${{matrix.task}}
 
             - name: Configure AWS Credentials
               uses: aws-actions/configure-aws-credentials@v1
