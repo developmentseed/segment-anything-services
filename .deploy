@@ -1,0 +1,18 @@
+{
+    "profile": "devseed",
+    "artifacts": {
+        "docker": [
+        ],
+        "tmp": [
+            "{{project}}:cpu-{{gitsha}}",
+            "{{project}}:gpu-{{gitsha}}"
+        ]
+    },
+    "tags": [{
+        "Key": "Project",
+        "Value": "segment-anything-geo"
+    },{
+        "Key": "Client",
+        "Value": "labs"
+    }]
+}
