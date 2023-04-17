@@ -12,8 +12,17 @@ RUN mkdir -p /home/model-server/ && mkdir -p /home/model-server/tmp
 
 COPY ./deployment/config_decode.properties /home/model-server/config.properties
 
-RUN mkdir model_store \
-    && curl -o model-store/sam_vit_b_01ec64.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
+COPY . ./
+
+RUN mkdir model-weights/ \
+    && curl -o model-weights/sam_vit_h_4b8939.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth \
+    && torch-model-archiver --model-name sam_vit_h_encode --version 1.0.0 --serialized-file model-weights/sam_vit_h_4b8939.pth --handler handler_encode.py
+
+RUN python scripts/export_onnx_model.py --checkpoint model-weights/sam_vit_h_4b8939.pth --model-type vit_h --output sam_vit_h_decode.onnx
+
+RUN torch-model-archiver --model-name sam_vit_h_decode --version 1.0.0 --serialized-file sam_vit_h_decode.onnx --handler handler_decode.py
+
+RUN mv *.onnx model-store/
 
 WORKDIR /home/model-server
 
