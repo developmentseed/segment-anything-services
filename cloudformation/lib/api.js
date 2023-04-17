@@ -89,7 +89,7 @@ export default {
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPath: '/v1/models/default',
-                Port: 8501,
+                Port: 7080,
                 Protocol: 'HTTP',
                 TargetType: 'ip',
                 VpcId: cf.ref('VpcId'),
@@ -187,7 +187,7 @@ export default {
                     Name: 'api',
                     Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/sam-service:cpu-', cf.ref('GitSha')]),
                     PortMappings: [{
-                        ContainerPort: 8501
+                        ContainerPort: 7080 
                     }],
                     Environment: [
                         { Name: 'StackName', Value: cf.stackName },
@@ -228,7 +228,7 @@ export default {
                 },
                 LoadBalancers: [{
                     ContainerName: 'api',
-                    ContainerPort: 8501,
+                    ContainerPort: 7080,
                     TargetGroupArn: cf.ref('TargetGroup')
                 }]
             }
@@ -241,8 +241,8 @@ export default {
                 SecurityGroupIngress: [{
                     CidrIp: '0.0.0.0/0',
                     IpProtocol: 'tcp',
-                    FromPort: 8501,
-                    ToPort: 8501
+                    FromPort: 7080,
+                    ToPort: 7080 
                 }]
             }
         },
