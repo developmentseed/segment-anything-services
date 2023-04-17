@@ -2,7 +2,7 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Parameters: {
-        VpcID: {
+        VpcId: {
             Type: 'String'
         },
         PublicSubnetA: {
@@ -88,8 +88,8 @@ export default {
             Properties: {
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
-                HealthCheckPath: '/api',
-                Port: 5000,
+                HealthCheckPath: '/v1/models/default',
+                Port: 8501,
                 Protocol: 'HTTP',
                 TargetType: 'ip',
                 VpcId: cf.ref('VpcId'),
@@ -122,137 +122,13 @@ export default {
                     PolicyDocument: {
                         Statement: [{
                             Effect: 'Allow',
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
-                            ],
-                            Action: '*'
-                        },{
-                            Effect: 'Allow',
                             Action: [
                                 'ecr:Describe*',
                                 'ecr:Get*',
                                 'ecr:List*'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':ecr:', cf.region, ':', cf.accountId, ':repository/segment-anything-geo'])
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'kms:Decrypt',
-                                'kms:GenerateDataKey'
-                            ],
-                            Resource: [cf.getAtt('KMS', 'Arn')]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'dynamodb:*'
-                            ],
-                            Resource: [
-                                cf.getAtt('DDBTable', 'Arn'),
-                                cf.join([cf.getAtt('DDBTable', 'Arn'), '/*'])
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'secretsmanager:Describe*',
-                                'secretsmanager:Get*',
-                                'secretsmanager:List*'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/*'])
-                            ]
-                        },{ // ------------ Permissions Required to stand up lambda tasks ------------
-                            Effect: 'Allow',
-                            Action: [
-                                'iam:PassRole'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/', cf.stackName])
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'cloudformation:*'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':cloudformation:', cf.region, ':', cf.accountId, ':stack/', cf.stackName, '-layer-*'])
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'cloudwatch:Describe*'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':cloudwatch:', cf.region, ':', cf.accountId, ':alarm:*'])
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'cloudwatch:PutMetricData'
-                            ],
-                            Resource: [
-                                '*'
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'cloudwatch:Get*',
-                                'cloudwatch:List*',
-                                'cloudwatch:PutMetricAlarm',
-                                'cloudwatch:DeleteAlarms'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':cloudwatch:', cf.region, ':', cf.accountId, ':alarm:', cf.stackName, '-layer-*'])
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'logs:CreateLogGroup',
-                                'logs:DeleteLogGroup',
-                                'logs:PutRetentionPolicy',
-                                'logs:describe*',
-                                'logs:get*'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':logs:', cf.region, ':', cf.accountId, ':log-group:/aws/lambda/', cf.stackName, '-layer-*'])
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'lambda:*'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':lambda:', cf.region, ':', cf.accountId, ':function:', cf.stackName, '-layer-*'])
-                            ]
-                        },{
-                            Effect: 'Allow', // Create events for scheduled ETL
-                            Action: [
-                                'events:PutRule',
-                                'events:DescribeRule',
-                                'events:ListRules',
-                                'events:PutTargets',
-                                'events:RemoveTargets',
-                                'events:DisableRule',
-                                'events:EnableRule',
-                                'events:DeleteRule'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':events:', cf.region, ':', cf.accountId, ':rule/', cf.stackName, '-*'])
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'batch:SubmitJob',
-                                'batch:ListJobs',
-                                'batch:DescribeJobs',
-                                'logs:GetLogEvents',
-                                'batch:CancelJob',
-                                'batch:DescribeJobs'
-                            ],
-                            Resource: [
-                                '*'
+                                cf.join(['arn:', cf.partition, ':ecr:', cf.region, ':', cf.accountId, ':repository/sam-service'])
                             ]
                         }]
                     }
@@ -309,9 +185,9 @@ export default {
                 TaskRoleArn: cf.getAtt('TaskRole', 'Arn'),
                 ContainerDefinitions: [{
                     Name: 'api',
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/segment-anything-geo:cpu-', cf.ref('GitSha')]),
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/sam-service:cpu-', cf.ref('GitSha')]),
                     PortMappings: [{
-                        ContainerPort: 5000
+                        ContainerPort: 8501
                     }],
                     Environment: [
                         { Name: 'StackName', Value: cf.stackName },
@@ -332,6 +208,7 @@ export default {
         },
         Service: {
             Type: 'AWS::ECS::Service',
+            DependsOn: ['ELB', 'HttpsListener'],
             Properties: {
                 ServiceName: cf.join('-', [cf.stackName, 'Service']),
                 Cluster: cf.ref('ECSCluster'),
@@ -351,7 +228,7 @@ export default {
                 },
                 LoadBalancers: [{
                     ContainerName: 'api',
-                    ContainerPort: 5000,
+                    ContainerPort: 8501,
                     TargetGroupArn: cf.ref('TargetGroup')
                 }]
             }
@@ -364,8 +241,8 @@ export default {
                 SecurityGroupIngress: [{
                     CidrIp: '0.0.0.0/0',
                     IpProtocol: 'tcp',
-                    FromPort: 5000,
-                    ToPort: 5000
+                    FromPort: 8501,
+                    ToPort: 8501
                 }]
             }
         },

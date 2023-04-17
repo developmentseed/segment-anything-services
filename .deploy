@@ -1,11 +1,8 @@
 {
-    "profile": "devseed",
+    "profile": "devseedsam",
     "artifacts": {
         "docker": [
-        ],
-        "tmp": [
-            "{{project}}:cpu-{{gitsha}}",
-            "{{project}}:gpu-{{gitsha}}"
+            "sam-service:cpu-{{gitsha}}"
         ]
     },
     "tags": [{
