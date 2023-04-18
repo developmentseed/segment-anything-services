@@ -24,7 +24,7 @@ RUN torch-model-archiver --model-name sam_vit_h_decode --version 1.0.0 --seriali
 
 RUN mv *.mar model-store/ \
     && rm *.onnx \
-    && rm *.pth
+    && rm -rf model-weights
 
 WORKDIR /home/model-server
 
