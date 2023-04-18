@@ -88,7 +88,7 @@ export default {
             Properties: {
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
-                HealthCheckPath: '/v1/models/default',
+                HealthCheckPath: '/ping',
                 Port: 7080,
                 Protocol: 'HTTP',
                 TargetType: 'ip',
