@@ -2,7 +2,7 @@
     "name": "@developmentseed/segment-anything-geo",
     "version": "1.0.0",
     "type": "module",
-    "description": " Running segment-anything image embedding, prompting, and mask generation as torchserve services ",
+    "description": "Running segment-anything image embedding, prompting, and mask generation as torchserve services ",
     "main": " ",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
