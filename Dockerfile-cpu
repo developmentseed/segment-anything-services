@@ -15,7 +15,7 @@ COPY ./deployment/config_decode.properties /home/model-server/config.properties
 COPY . ./
 
 RUN mkdir model-weights/ \
-    && curl -o model-weights/sam_vit_h_4b8939.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth \
+    && curl -o model-weights/sam_vit_h_4b8939.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth \
     && torch-model-archiver --model-name sam_vit_h_encode --version 1.0.0 --serialized-file model-weights/sam_vit_h_4b8939.pth --handler handler_encode.py
 
 RUN python scripts/export_onnx_model.py --checkpoint model-weights/sam_vit_h_4b8939.pth --model-type vit_h --output sam_vit_h_decode.onnx
