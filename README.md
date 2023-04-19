@@ -1,5 +1,26 @@
 # Running the Segment Anything Encoder and Decoder as Services
 
+## Quickstart, building and starting the docker services
+
+### Building the gpu torchserve container for image encoding
+With the GPU, inference time should be about 1.8 seconds or less depending on the GPU. On an older 1080 Ti Pascal GPU, inference time is 1.67 seconds without compilation.
+
+```
+docker build -t torchserve-sam-gpu -f Dockerfile-gpu .
+bash start_serve_encode_gpu.sh
+```
+
+### Building the cpu torchserve container for image decoding
+
+```
+docker build -t torchserve-sam-cpu -f Dockerfile-cpu .
+bash start_serve_decode_cpu.sh
+```
+
+For both containers, both models will be downloaded using the vit_h weights and available as endpoints, but it is recommended to use the GPU for encoding and CPU for decoding.
+
+## Local Setup
+
 ### 1. Downloading model weights
 
 If you have access, download from the devseed s3:
@@ -37,23 +58,7 @@ torch-model-archiver --model-name sam_vit_h_decode --version 1.0.0 --serialized-
 mv sam_vit_h_decode.mar model_store_decode/sam_vit_h_decode.mar
 ```
 
-
-### 3a. Building the gpu torchserve container for image encoding
-With the GPU, inference time should be about 1.8 seconds or less depending on the GPU. On an older 1080 Ti Pascal GPU, inference time is 1.67 seconds without compilation.
-
-```
-docker build -t torchserve-sam-gpu .
-bash start_serve_encode_gpu.sh $(pwd)/model_store_encode
-```
-
-### 3b. Building the cpu torchserve container for image decoding
-
-```
-docker build -t torchserve-sam-cpu -f Dockerfile-cpu .
-bash start_serve_decode_cpu.sh $(pwd)/model_store_decode
-```
-
-### 4. Building jupyter server container
+### Building jupyter server container
 
 Use this container to test the model in a GPU enabled jupyter notebook server with geospatial and pytorch dependencies installed.
 
