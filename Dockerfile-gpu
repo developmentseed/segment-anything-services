@@ -2,7 +2,7 @@ FROM pytorch/torchserve:latest-gpu
 
 USER root
 
-RUN pip install "git+https://github.com/facebookresearch/segment-anything.git"
+RUN pip install "onnxruntime==1.14.1" "onnx==1.13.1" "git+https://github.com/facebookresearch/segment-anything.git"
 
 COPY ./deployment/dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
 
