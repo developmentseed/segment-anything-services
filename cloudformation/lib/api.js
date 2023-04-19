@@ -26,6 +26,10 @@ export default {
                 Name: cf.stackName,
                 Type: 'application',
                 SecurityGroups: [cf.ref('ELBSecurityGroup')],
+                LoadBalancerAttributes: [{
+                    Key: 'idle_timeout.timeout_seconds',
+                    Value:  '4000'
+                }],
                 Subnets:  [
                     cf.ref('PublicSubnetA'),
                     cf.ref('PublicSubnetB')
@@ -89,6 +93,7 @@ export default {
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPath: '/ping',
+                HealthCheckPort: 7080,
                 Port: 7080,
                 Protocol: 'HTTP',
                 TargetType: 'ip',
@@ -174,9 +179,12 @@ export default {
             Properties: {
                 Family: cf.stackName,
                 Cpu: 1024,
-                Memory: 4096,
+                Memory: 8192,
                 NetworkMode: 'awsvpc',
                 RequiresCompatibilities: ['FARGATE'],
+                EphemeralStorage: {
+                    SizeInGiB: '100'
+                },
                 Tags: [{
                     Key: 'Name',
                     Value: cf.join('-', [cf.stackName, 'api'])
