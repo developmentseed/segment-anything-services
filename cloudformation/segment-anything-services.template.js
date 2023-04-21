@@ -1,11 +1,13 @@
 import cf from '@openaddresses/cloudfriend';
 import API from './lib/api.js';
+import GPU from './lib/gpu.js';
 import {
     ELB as ELBAlarms,
 } from '@openaddresses/batch-alarms';
 
 export default cf.merge(
     API,
+    GPU,
     {
         Description: 'Template for @developmentseed/segment-anything-geo',
         Parameters: {
@@ -21,6 +23,16 @@ export default cf.merge(
                 Description: 'Email to send alarms to',
                 Type: 'String'
             },
+            VpcId: {
+                Type: 'String'
+            },
+            PublicSubnetA: {
+                Type: 'String'
+            },
+            PublicSubnetB: {
+                Type: 'String'
+            }
+
         }
     },
     ELBAlarms({

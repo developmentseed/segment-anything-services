@@ -2,17 +2,9 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
-        Logs: {
-            Type: 'AWS::Logs::LogGroup',
-            Properties: {
-                LogGroupName: cf.stackName,
-                RetentionInDays: 7
-            }
-        },
-        ELB: {
+        GPUELB: {
             Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer',
             Properties: {
-                Name: cf.stackName,
                 Type: 'application',
                 SecurityGroups: [cf.ref('ELBSecurityGroup')],
                 LoadBalancerAttributes: [{
@@ -26,25 +18,7 @@ export default {
             }
 
         },
-        ELBSecurityGroup: {
-            Type : 'AWS::EC2::SecurityGroup',
-            Properties : {
-                GroupDescription: cf.join('-', [cf.stackName, 'elb-sg']),
-                SecurityGroupIngress: [{
-                    CidrIp: '0.0.0.0/0',
-                    IpProtocol: 'tcp',
-                    FromPort: 443,
-                    ToPort: 443
-                },{
-                    CidrIp: '0.0.0.0/0',
-                    IpProtocol: 'tcp',
-                    FromPort: 80,
-                    ToPort: 80
-                }],
-                VpcId: cf.ref('VpcId')
-            }
-        },
-        HttpsListener: {
+        GPUHttpsListener: {
             Type: 'AWS::ElasticLoadBalancingV2::Listener',
             Properties: {
                 Certificates: [{
@@ -52,14 +26,14 @@ export default {
                 }],
                 DefaultActions: [{
                     Type: 'forward',
-                    TargetGroupArn: cf.ref('TargetGroup')
+                    TargetGroupArn: cf.ref('GPUTargetGroup')
                 }],
-                LoadBalancerArn: cf.ref('ELB'),
+                LoadBalancerArn: cf.ref('GPUELB'),
                 Port: 443,
                 Protocol: 'HTTPS'
             }
         },
-        HttpListener: {
+        GPUHttpListener: {
             Type: 'AWS::ElasticLoadBalancingV2::Listener',
             Properties: {
                 DefaultActions: [{
@@ -70,32 +44,163 @@ export default {
                         Port: 443
                     }
                 }],
-                LoadBalancerArn: cf.ref('ELB'),
+                LoadBalancerArn: cf.ref('GPUELB'),
                 Port: 80,
                 Protocol: 'HTTP'
             }
         },
-        TargetGroup: {
+        GPUTargetGroup: {
             Type: 'AWS::ElasticLoadBalancingV2::TargetGroup',
-            DependsOn: 'ELB',
+            DependsOn: 'GPUELB',
             Properties: {
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPath: '/ping',
-                HealthCheckPort: 7080,
+                HealthCheckPort: 'traffic-port',
                 Port: 7080,
                 Protocol: 'HTTP',
-                TargetType: 'ip',
                 VpcId: cf.ref('VpcId'),
                 Matcher: {
                     HttpCode: '200,202,302,304'
                 }
             }
         },
-        ECSCluster: {
-            Type: 'AWS::ECS::Cluster',
+        ECSAutoScalingGroup: {
+            Type: 'AWS::AutoScaling::AutoScalingGroup',
+            DependsOn: 'GPUService',
             Properties: {
-                ClusterName: cf.join('-', [cf.stackName, 'cluster'])
+                VPCZoneIdentifier: [
+                    cf.ref('PublicSubnetA'),
+                    cf.ref('PublicSubnetB'),
+                ],
+                LaunchConfigurationName: cf.ref('ECSGPUContainerInstances'),
+                MinSize: 0,
+                MaxSize: 1,
+                DesiredCapacity: 1
+            },
+            CreationPolicy: {
+                ResourceSignal: {
+                    Timeout: 'PT15M'
+                }
+            },
+            UpdatePolicy: {
+                AutoScalingReplacingUpdate: {
+                    WillReplace: 'true'
+                }
+            }
+        },
+        ECSEC2InstanceProfile: {
+            Type: 'AWS::IAM::InstanceProfile',
+            Properties: {
+                Path: '/',
+                Roles: [ cf.ref('EC2Role') ]
+            }
+        },
+        ECSServiceRole: {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ecs.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "ecs-service",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                                        "elasticloadbalancing:DeregisterTargets",
+                                        "elasticloadbalancing:Describe*",
+                                        "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                                        "elasticloadbalancing:RegisterTargets",
+                                        "ec2:Describe*",
+                                        "ec2:AuthorizeSecurityGroupIngress"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        EC2Role: {
+            Type: "AWS::IAM::Role",
+            Properties: {
+                AssumeRolePolicyDocument: {
+                    Statement: [{
+                        Effect: 'Allow',
+                        Principal: {
+                            Service: [ 'ec2.amazonaws.com' ]
+                        },
+                        Action: [ 'sts:AssumeRole' ]
+                    }]
+                },
+                Path: '/',
+                Policies: [{
+                    PolicyName: 'ecs-service',
+                    PolicyDocument: {
+                        Statement: [{
+                            Effect: 'Allow',
+                            Action: [
+                                'ecs:CreateCluster',
+                                'ecs:DeregisterContainerInstance',
+                                'ecs:UpdateContainerInstancesState',
+                                'ecs:DiscoverPollEndpoint',
+                                'ecs:Poll',
+                                'ecs:RegisterContainerInstance',
+                                'ecs:StartTelemetrySession',
+                                'ecs:Submit*',
+                                'logs:CreateLogStream',
+                                'logs:PutLogEvents'
+                            ],
+                            Resource: '*'
+                        }]
+                    }
+                }]
+            }
+        },
+        ECSGPUContainerInstances: {
+            Type: "AWS::AutoScaling::LaunchConfiguration",
+            Properties: {
+                ImageId: 'ami-0b2fab38c8b1e8508',
+                SecurityGroups: [cf.ref('ServiceSecurityGroup')],
+                "InstanceType": 'p2.xlarge',
+                "IamInstanceProfile": cf.ref('ECSEC2InstanceProfile'),
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "echo ECS_CLUSTER=", cf.ref('ECSCluster'), " >> /etc/ecs/ecs.config\n",
+                                "yum install -y aws-cfn-bootstrap\n",
+                                "/opt/aws/bin/cfn-signal -e $? ",
+                                "         --stack ",
+                                cf.stackName,
+                                "         --resource ECSAutoScalingGroup ",
+                                "         --region ",
+                                cf.region,
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
             }
         },
         TaskRole: {
@@ -163,14 +268,12 @@ export default {
                 Path: '/service-role/'
             }
         },
-        TaskDefinition: {
+        GPUTaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
             Properties: {
                 Family: cf.stackName,
                 Cpu: 1024,
                 Memory: 8192,
-                NetworkMode: 'awsvpc',
-                RequiresCompatibilities: ['FARGATE'],
                 EphemeralStorage: {
                     SizeInGiB: '100'
                 },
@@ -203,29 +306,21 @@ export default {
                 }]
             }
         },
-        Service: {
+        GPUService: {
             Type: 'AWS::ECS::Service',
+            DependsOn: ['GPUELB', 'GPUHttpsListener'],
             Properties: {
-                ServiceName: cf.join('-', [cf.stackName, 'Service']),
+                ServiceName: cf.join('-', [cf.stackName, 'GPUService']),
                 Cluster: cf.ref('ECSCluster'),
-                TaskDefinition: cf.ref('TaskDefinition'),
-                LaunchType: 'FARGATE',
+                TaskDefinition: cf.ref('GPUTaskDefinition'),
+                LaunchType: 'EC2',
                 HealthCheckGracePeriodSeconds: 300,
                 DesiredCount: 1,
-                NetworkConfiguration: {
-                    AwsvpcConfiguration: {
-                        AssignPublicIp: 'ENABLED',
-                        SecurityGroups: [cf.ref('ServiceSecurityGroup')],
-                        Subnets:  [
-                            cf.ref('PublicSubnetA'),
-                            cf.ref('PublicSubnetB')
-                        ]
-                    }
-                },
+                Role: cf.ref('ECSServiceRole'),
                 LoadBalancers: [{
                     ContainerName: 'api',
                     ContainerPort: 7080,
-                    TargetGroupArn: cf.ref('TargetGroup')
+                    TargetGroupArn: cf.ref('GPUTargetGroup')
                 }]
             }
         },
@@ -244,9 +339,9 @@ export default {
         },
     },
     Outputs: {
-        API: {
-            Description: 'API ELB',
-            Value: cf.join(['http://', cf.getAtt('ELB', 'DNSName')])
+        GPU: {
+            Description: 'GPU API ELB',
+            Value: cf.join(['http://', cf.getAtt('GPUELB', 'DNSName')])
         }
     }
 };
