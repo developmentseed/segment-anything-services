@@ -178,7 +178,7 @@ export default {
         ECSGPUContainerInstances: {
             Type: "AWS::AutoScaling::LaunchConfiguration",
             Properties: {
-                ImageId: 'ami-0b2fab38c8b1e8508',
+                ImageId: 'ami-0035a5a4b40951ded',
                 SecurityGroups: [cf.ref('ServiceSecurityGroup')],
                 "InstanceType": 'p2.xlarge',
                 "IamInstanceProfile": cf.ref('ECSEC2InstanceProfile'),
