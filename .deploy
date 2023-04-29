@@ -2,7 +2,8 @@
     "profile": "devseedsam",
     "artifacts": {
         "docker": [
-            "sam-service:cpu-{{gitsha}}"
+            "sam-service:cpu-{{gitsha}}",
+            "sam-service:gpu-{{gitsha}}"
         ]
     },
     "tags": [{

@@ -189,6 +189,7 @@ export default {
                             [
                                 "#!/bin/bash -xe\n",
                                 "echo ECS_CLUSTER=", cf.ref('ECSCluster'), " >> /etc/ecs/ecs.config\n",
+                                "echo ECS_IMAGE_PULL_BEHAVIOR=prefer-cached >> /etc/ecs/ecs.config\n",
                                 "yum install -y aws-cfn-bootstrap\n",
                                 "/opt/aws/bin/cfn-signal -e $? ",
                                 "         --stack ",
@@ -271,23 +272,31 @@ export default {
         GPUTaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
             Properties: {
-                Family: cf.stackName,
+                Family: cf.join([cf.stackName, '-gpu']),
                 Cpu: 1024,
                 Memory: 8192,
-                EphemeralStorage: {
-                    SizeInGiB: '100'
-                },
                 Tags: [{
                     Key: 'Name',
-                    Value: cf.join('-', [cf.stackName, 'api'])
+                    Value: cf.join('-', [cf.stackName, 'gpu-api'])
                 }],
                 ExecutionRoleArn: cf.getAtt('ExecRole', 'Arn'),
                 TaskRoleArn: cf.getAtt('TaskRole', 'Arn'),
+                Volumes: [{
+                    Name: 'ModelStorage',
+                }],
                 ContainerDefinitions: [{
-                    Name: 'api',
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/sam-service:cpu-', cf.ref('GitSha')]),
+                    Name: 'gpu-api',
+                    MountPoints: [{
+                        SourceVolume: 'ModelStorage',
+                        ContainerPath: '/var/log'
+                    }],
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/sam-service:gpu-', cf.ref('GitSha')]),
                     PortMappings: [{
                         ContainerPort: 7080
+                    }],
+                    ResourceRequirements: [{
+                        Type: 'GPU',
+                        Value: 1
                     }],
                     Environment: [
                         { Name: 'StackName', Value: cf.stackName },
@@ -318,7 +327,7 @@ export default {
                 DesiredCount: 1,
                 Role: cf.ref('ECSServiceRole'),
                 LoadBalancers: [{
-                    ContainerName: 'api',
+                    ContainerName: 'gpu-api',
                     ContainerPort: 7080,
                     TargetGroupArn: cf.ref('GPUTargetGroup')
                 }]

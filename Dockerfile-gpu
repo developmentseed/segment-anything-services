@@ -4,6 +4,11 @@ USER root
 
 RUN pip install "onnxruntime==1.14.1" "onnx==1.13.1" "git+https://github.com/facebookresearch/segment-anything.git"
 
+RUN apt install unzip \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install
+
 COPY ./deployment/dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
 
 RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
@@ -14,20 +19,7 @@ COPY ./deployment/config_encode.properties /home/model-server/config.properties
 
 COPY handler*.py ./
 
-RUN mkdir -p model-weights/ \
-    && curl -o model-weights/sam_vit_h_4b8939.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
-
-RUN torch-model-archiver --model-name sam_vit_h_encode --version 1.0.0 --serialized-file model-weights/sam_vit_h_4b8939.pth --handler handler_encode.py
-
-COPY scripts ./scripts
-
-RUN python scripts/export_onnx_model.py --checkpoint model-weights/sam_vit_h_4b8939.pth --model-type vit_h --output sam_vit_h_decode.onnx
-
-RUN torch-model-archiver --model-name sam_vit_h_decode --version 1.0.0 --serialized-file sam_vit_h_decode.onnx --handler handler_decode.py
-
-RUN mv *.mar model-store/ \
-    && rm *.onnx \
-    && rm -rf model-weights
+COPY start ./
 
 WORKDIR /home/model-server
 
@@ -37,4 +29,5 @@ ENV ENABLE_TORCH_PROFILER=TRUE
 
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
-CMD ["serve"]
+CMD ./start
+
