@@ -1,4 +1,4 @@
-FROM pytorch/torchserve:latest-cpu
+FROM pytorch/torchserve:latest
 
 USER root
 
@@ -8,13 +8,9 @@ RUN mkdir -p model-weights/ \
 RUN mkdir -p model-weights/ \
     && curl -o model-weights/sam_vit_h_4b8939.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 
-RUN pip install "onnxruntime==1.14.1" "onnx==1.13.1" "git+https://github.com/facebookresearch/segment-anything.git"
+RUN pip install "onnxruntime==1.14.1" "onnx==1.13.1" "git+https://github.com/facebookresearch/segment-anything.git#567662b" awscli
 
-COPY ./deployment/dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
-
-RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
-
-RUN mkdir -p /home/model-server/ && mkdir -p /home/model-server/tmp
+RUN mkdir -p /home/model-server/
 
 COPY ./deployment/config_decode.properties /home/model-server/config.properties
 
@@ -40,10 +36,5 @@ RUN mv *.mar model-store/ \
 
 WORKDIR /home/model-server
 
-ENV TEMP=/home/model-server/tmp
-
-ENV ENABLE_TORCH_PROFILER=TRUE
-
-ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
-
-CMD ["serve"]
+RUN aws s3 cp model-store/sam_vit_h_decode.mar s3://segment-anything/model-archives/ && \
+    aws s3 cp model-store/sam_vit_h_encode.mar s3://segment-anything/model-archives/
