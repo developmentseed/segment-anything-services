@@ -222,7 +222,7 @@ export default {
                     Name: 'gpu-api',
                     MountPoints: [{
                         SourceVolume: 'ModelStorage',
-                        ContainerPath: '/home/model-server/model-store'
+                        ContainerPath: '/home/model-server/volume'
                     }],
                     Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/sam-service:gpu-', cf.ref('GitSha')]),
                     PortMappings: [{

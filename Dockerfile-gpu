@@ -29,7 +29,7 @@ COPY start ./
 
 WORKDIR /home/model-server
 
-ENV TEMP=/home/model-server/tmp
+ENV TEMP=/home/model-server/volume/tmp
 
 ENV ENABLE_TORCH_PROFILER=TRUE
 
