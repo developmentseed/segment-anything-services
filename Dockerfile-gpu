@@ -33,7 +33,5 @@ ENV TEMP=/home/model-server/tmp
 
 ENV ENABLE_TORCH_PROFILER=TRUE
 
-ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
-
 CMD ./start
 
