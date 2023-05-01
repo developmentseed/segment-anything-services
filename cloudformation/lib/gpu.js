@@ -57,7 +57,7 @@ export default {
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPath: '/ping',
                 HealthCheckPort: 'traffic-port',
-                Port: 7080,
+                Port: 8080,
                 Protocol: 'HTTP',
                 VpcId: cf.ref('VpcId'),
                 Matcher: {
@@ -179,7 +179,7 @@ export default {
             Type: "AWS::AutoScaling::LaunchConfiguration",
             Properties: {
                 ImageId: 'ami-0035a5a4b40951ded',
-                SecurityGroups: [cf.ref('ServiceSecurityGroup')],
+                SecurityGroups: [cf.ref('GPUServiceSecurityGroup')],
                 "InstanceType": 'p2.xlarge',
                 "IamInstanceProfile": cf.ref('ECSEC2InstanceProfile'),
                 "UserData": {
@@ -227,7 +227,7 @@ export default {
                     }],
                     Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/sam-service:gpu-', cf.ref('GitSha')]),
                     PortMappings: [{
-                        ContainerPort: 7080
+                        ContainerPort: 8080
                     }],
                     ResourceRequirements: [{
                         Type: 'GPU',
@@ -263,12 +263,12 @@ export default {
                 Role: cf.ref('ECSServiceRole'),
                 LoadBalancers: [{
                     ContainerName: 'gpu-api',
-                    ContainerPort: 7080,
+                    ContainerPort: 8080,
                     TargetGroupArn: cf.ref('GPUTargetGroup')
                 }]
             }
         },
-        ServiceSecurityGroup: {
+        GPUServiceSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
                 GroupDescription: cf.join('-', [cf.stackName, 'ec2-sg']),
@@ -276,8 +276,8 @@ export default {
                 SecurityGroupIngress: [{
                     CidrIp: '0.0.0.0/0',
                     IpProtocol: 'tcp',
-                    FromPort: 7080,
-                    ToPort: 7080
+                    FromPort: 8080,
+                    ToPort: 8080
                 }]
             }
         },
