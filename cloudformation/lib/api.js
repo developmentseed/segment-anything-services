@@ -200,7 +200,7 @@ export default {
                     LogConfiguration: {
                         LogDriver: 'awslogs',
                         Options: {
-                            'awslogs-group': cf.stackName,
+                            'awslogs-group': cf.join([cf.stackName, '-cpu']),
                             'awslogs-region': cf.region,
                             'awslogs-stream-prefix': cf.stackName,
                             'awslogs-create-group': true

@@ -223,7 +223,7 @@ export default {
                     Name: 'gpu-api',
                     MountPoints: [{
                         SourceVolume: 'ModelStorage',
-                        ContainerPath: '/var/log'
+                        ContainerPath: '/home/model-server/model-store'
                     }],
                     Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/sam-service:gpu-', cf.ref('GitSha')]),
                     PortMappings: [{
@@ -240,7 +240,7 @@ export default {
                     LogConfiguration: {
                         LogDriver: 'awslogs',
                         Options: {
-                            'awslogs-group': cf.stackName,
+                            'awslogs-group': cf.join([cf.stackName, '-gpu']),
                             'awslogs-region': cf.region,
                             'awslogs-stream-prefix': cf.stackName,
                             'awslogs-create-group': true
