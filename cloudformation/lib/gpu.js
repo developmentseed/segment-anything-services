@@ -166,8 +166,7 @@ export default {
                                 'ecs:RegisterContainerInstance',
                                 'ecs:StartTelemetrySession',
                                 'ecs:Submit*',
-                                'logs:CreateLogStream',
-                                'logs:PutLogEvents'
+                                'logs:*'
                             ],
                             Resource: '*'
                         }]
