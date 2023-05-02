@@ -33,8 +33,10 @@ jobs:
             - name: Run Container and Copy .mar Files to S3
               run: |
                   GITSHA=${{github.event.pull_request.head.sha || github.sha}}
-                  docker run -e AWS_SECRET_ACCESS_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}} -e AWS_ACCESS_KEY_ID=${{secrets.AWS_ACCESS_KEY_ID}} segment-build
-                  aws s3 cp /home/model-store/sam_vit_h_decode.mar s3://segment-anything-services-prod-685980093638-us-east-1/${GITSHA}/
-                  aws s3 cp /home/model-store/sam_vit_h_encode.mar s3://segment-anything-services-prod-685980093638-us-east-1/${GITSHA}/
+                  docker run \
+                      -e AWS_SECRET_ACCESS_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}} \
+                      -e AWS_ACCESS_KEY_ID=${{secrets.AWS_ACCESS_KEY_ID}} segment-build \
+                      aws s3 cp /home/model-store/sam_vit_h_decode.mar s3://segment-anything-services-prod-685980093638-us-east-1/${GITSHA}/ \
+                      && aws s3 cp /home/model-store/sam_vit_h_encode.mar s3://segment-anything-services-prod-685980093638-us-east-1/${GITSHA}/
 
 
