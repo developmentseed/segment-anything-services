@@ -35,8 +35,14 @@ jobs:
                   GITSHA=${{github.event.pull_request.head.sha || github.sha}}
                   docker run \
                       -e AWS_SECRET_ACCESS_KEY=${{secrets.AWS_SECRET_ACCESS_KEY}} \
-                      -e AWS_ACCESS_KEY_ID=${{secrets.AWS_ACCESS_KEY_ID}} segment-build \
-                      aws s3 cp /home/model-store/sam_vit_h_decode.mar s3://segment-anything-services-prod-685980093638-us-east-1/${GITSHA}/ \
-                      && aws s3 cp /home/model-store/sam_vit_h_encode.mar s3://segment-anything-services-prod-685980093638-us-east-1/${GITSHA}/
+                      -e AWS_ACCESS_KEY_ID=${{secrets.AWS_ACCESS_KEY_ID}} \
+                      -e GITSHA=$GITSHA \
+                      segment-build \
+                      bash -c "\
+                          aws configure set aws_access_key_id \$AWS_ACCESS_KEY_ID && \
+                          aws configure set aws_secret_access_key \$AWS_SECRET_ACCESS_KEY && \
+                          aws configure set region us-east-1 && \
+                          aws s3 cp /home/model-store/sam_vit_h_decode.mar s3://segment-anything-services-prod-685980093638-us-east-1/\${GITSHA}/ && \
+                          aws s3 cp /home/model-store/sam_vit_h_encode.mar s3://segment-anything-services-prod-685980093638-us-east-1/\${GITSHA}/"
 
 
