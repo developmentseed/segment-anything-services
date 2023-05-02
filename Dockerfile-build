@@ -36,5 +36,5 @@ RUN mv *.mar model-store/ \
 
 WORKDIR /home/model-server
 
-RUN aws s3 cp model-store/sam_vit_h_decode.mar s3://segment-anything/model-archives/ && \
-    aws s3 cp model-store/sam_vit_h_encode.mar s3://segment-anything/model-archives/
+# Add entrypoint script to copy the model files when the container is run
+ENTRYPOINT ["/bin/sh", "-c", "aws s3 cp model-store/sam_vit_h_decode.mar s3://segment-anything/model-archives/ && aws s3 cp model-store/sam_vit_h_encode.mar s3://segment-anything/model-archives/ && exec \"$@\""]
