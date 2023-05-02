@@ -1,11 +1,15 @@
 import cf from '@openaddresses/cloudfriend';
 import API from './lib/api.js';
 import GPU from './lib/gpu.js';
+import S3 from './lib/s3.js';
+import Shared from './lib/shared.js';
 import {
     ELB as ELBAlarms,
 } from '@openaddresses/batch-alarms';
 
 export default cf.merge(
+    S3,
+    Shared,
     API,
     GPU,
     {

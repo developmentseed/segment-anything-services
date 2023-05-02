@@ -1,0 +1,9 @@
+#! /bin/bash
+set -xeuo pipefail
+
+mkdir /home/model-server/volume/model-store
+
+aws s3 cp s3://segment-anything-services-prod-685980093638-us-east-1/ ./volume/model-store/ --recursive
+
+torchserve --foreground --ts-config ./config.properties
+

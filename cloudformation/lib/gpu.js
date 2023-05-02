@@ -57,7 +57,7 @@ export default {
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPath: '/ping',
                 HealthCheckPort: 'traffic-port',
-                Port: 7080,
+                Port: 8080,
                 Protocol: 'HTTP',
                 VpcId: cf.ref('VpcId'),
                 Matcher: {
@@ -166,8 +166,7 @@ export default {
                                 'ecs:RegisterContainerInstance',
                                 'ecs:StartTelemetrySession',
                                 'ecs:Submit*',
-                                'logs:CreateLogStream',
-                                'logs:PutLogEvents'
+                                'logs:*'
                             ],
                             Resource: '*'
                         }]
@@ -179,7 +178,7 @@ export default {
             Type: "AWS::AutoScaling::LaunchConfiguration",
             Properties: {
                 ImageId: 'ami-0035a5a4b40951ded',
-                SecurityGroups: [cf.ref('ServiceSecurityGroup')],
+                SecurityGroups: [cf.ref('GPUServiceSecurityGroup')],
                 "InstanceType": 'p2.xlarge',
                 "IamInstanceProfile": cf.ref('ECSEC2InstanceProfile'),
                 "UserData": {
@@ -189,6 +188,7 @@ export default {
                             [
                                 "#!/bin/bash -xe\n",
                                 "echo ECS_CLUSTER=", cf.ref('ECSCluster'), " >> /etc/ecs/ecs.config\n",
+                                "echo ECS_IMAGE_PULL_BEHAVIOR=prefer-cached >> /etc/ecs/ecs.config\n",
                                 "yum install -y aws-cfn-bootstrap\n",
                                 "/opt/aws/bin/cfn-signal -e $? ",
                                 "         --stack ",
@@ -203,91 +203,34 @@ export default {
                 }
             }
         },
-        TaskRole: {
-            Type: 'AWS::IAM::Role',
-            Properties: {
-                AssumeRolePolicyDocument: {
-                    Version: '2012-10-17',
-                    Statement: [{
-                        Effect: 'Allow',
-                        Principal: {
-                            Service: 'ecs-tasks.amazonaws.com'
-                        },
-                        Action: 'sts:AssumeRole'
-                    }]
-                },
-                Policies: [{
-                    PolicyName: cf.join('-', [cf.stackName, 'api-policy']),
-                    PolicyDocument: {
-                        Statement: [{
-                            Effect: 'Allow',
-                            Action: [
-                                'ecr:Describe*',
-                                'ecr:Get*',
-                                'ecr:List*'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':ecr:', cf.region, ':', cf.accountId, ':repository/sam-service'])
-                            ]
-                        }]
-                    }
-                }]
-            }
-        },
-        ExecRole: {
-            Type: 'AWS::IAM::Role',
-            Properties: {
-                AssumeRolePolicyDocument: {
-                    Version: '2012-10-17',
-                    Statement: [{
-                        Effect: 'Allow',
-                        Principal: {
-                            Service: 'ecs-tasks.amazonaws.com'
-                        },
-                        Action: 'sts:AssumeRole'
-                    }]
-                },
-                Policies: [{
-                    PolicyName: cf.join([cf.stackName, '-api-logging']),
-                    PolicyDocument: {
-                        Statement: [{
-                            Effect: 'Allow',
-                            Action: [
-                                'logs:CreateLogGroup',
-                                'logs:CreateLogStream',
-                                'logs:PutLogEvents',
-                                'logs:DescribeLogStreams'
-                            ],
-                            Resource: [cf.join(['arn:', cf.partition, ':logs:*:*:*'])]
-                        }]
-                    }
-                }],
-                ManagedPolicyArns: [
-                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'])
-                ],
-                Path: '/service-role/'
-            }
-        },
         GPUTaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
             Properties: {
-                Family: cf.stackName,
+                Family: cf.join([cf.stackName, '-gpu']),
                 Cpu: 1024,
                 Memory: 8192,
-                EphemeralStorage: {
-                    SizeInGiB: '100'
-                },
                 Tags: [{
                     Key: 'Name',
-                    Value: cf.join('-', [cf.stackName, 'api'])
+                    Value: cf.join('-', [cf.stackName, 'gpu-api'])
                 }],
                 ExecutionRoleArn: cf.getAtt('ExecRole', 'Arn'),
                 TaskRoleArn: cf.getAtt('TaskRole', 'Arn'),
+                Volumes: [{
+                    Name: 'ModelStorage',
+                }],
                 ContainerDefinitions: [{
-                    Name: 'api',
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/sam-service:cpu-', cf.ref('GitSha')]),
+                    Name: 'gpu-api',
+                    MountPoints: [{
+                        SourceVolume: 'ModelStorage',
+                        ContainerPath: '/home/model-server/volume'
+                    }],
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/sam-service:gpu-', cf.ref('GitSha')]),
                     PortMappings: [{
-                        ContainerPort: 7080
+                        ContainerPort: 8080
+                    }],
+                    ResourceRequirements: [{
+                        Type: 'GPU',
+                        Value: 1
                     }],
                     Environment: [
                         { Name: 'StackName', Value: cf.stackName },
@@ -296,7 +239,7 @@ export default {
                     LogConfiguration: {
                         LogDriver: 'awslogs',
                         Options: {
-                            'awslogs-group': cf.stackName,
+                            'awslogs-group': cf.join([cf.stackName, '-gpu']),
                             'awslogs-region': cf.region,
                             'awslogs-stream-prefix': cf.stackName,
                             'awslogs-create-group': true
@@ -318,13 +261,13 @@ export default {
                 DesiredCount: 1,
                 Role: cf.ref('ECSServiceRole'),
                 LoadBalancers: [{
-                    ContainerName: 'api',
-                    ContainerPort: 7080,
+                    ContainerName: 'gpu-api',
+                    ContainerPort: 8080,
                     TargetGroupArn: cf.ref('GPUTargetGroup')
                 }]
             }
         },
-        ServiceSecurityGroup: {
+        GPUServiceSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
                 GroupDescription: cf.join('-', [cf.stackName, 'ec2-sg']),
@@ -332,8 +275,8 @@ export default {
                 SecurityGroupIngress: [{
                     CidrIp: '0.0.0.0/0',
                     IpProtocol: 'tcp',
-                    FromPort: 7080,
-                    ToPort: 7080
+                    FromPort: 8080,
+                    ToPort: 8080
                 }]
             }
         },
