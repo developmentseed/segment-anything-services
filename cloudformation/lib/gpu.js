@@ -174,12 +174,37 @@ export default {
                 }]
             }
         },
+        GPUEcsHostSecurityGroup: {
+            Type: 'AWS::EC2::SecurityGroup',
+            Properties: {
+                GroupDescription: cf.join([cf.stackName, ' - Access to the ECS hosts that run containers']),
+                VpcId: cf.ref('VpcId'),
+            }
+        },
+        GPUEcsSecurityGroupIngressFromPublicALB: {
+            Type: 'AWS::EC2::SecurityGroupIngress',
+            Properties: {
+                Description: cf.join([cf.stackName, ' - Ingress from the public ALB']),
+                GroupId: cf.ref('GPUEcsHostSecurityGroup'),
+                IpProtocol: -1,
+                SourceSecurityGroupId: cf.ref('ELBSecurityGroup')
+            }
+        },
+        GPIEcsSecurityGroupIngressFromSelf: {
+            Type: 'AWS::EC2::SecurityGroupIngress',
+            Properties: {
+                Description: cf.join([cf.stackName, ' - Ingress from other hosts in the same security group']),
+                GroupId: cf.ref('GPUEcsHostSecurityGroup'),
+                IpProtocol: -1,
+                SourceSecurityGroupId: cf.ref('GPUEcsHostSecurityGroup')
+            }
+        },
         ECSGPUContainerInstances: {
             Type: "AWS::AutoScaling::LaunchConfiguration",
             Properties: {
                 ImageId: 'ami-0035a5a4b40951ded',
-                SecurityGroups: [cf.ref('GPUServiceSecurityGroup')],
                 InstanceType: 'p2.xlarge',
+                SecurityGroups: [cf.ref('GPUEcsHostSecurityGroup')],
                 IamInstanceProfile: cf.ref('ECSEC2InstanceProfile'),
                 BlockDeviceMappings: [{
                     DeviceName: '/dev/sdf',
