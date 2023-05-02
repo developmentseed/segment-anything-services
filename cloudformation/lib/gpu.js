@@ -67,7 +67,7 @@ export default {
         },
         ECSAutoScalingGroup: {
             Type: 'AWS::AutoScaling::AutoScalingGroup',
-            DependsOn: 'GPUService',
+            DependsOn: ['GPUService'],
             Properties: {
                 VPCZoneIdentifier: [
                     cf.ref('PublicSubnetA'),
@@ -179,14 +179,29 @@ export default {
             Properties: {
                 ImageId: 'ami-0035a5a4b40951ded',
                 SecurityGroups: [cf.ref('GPUServiceSecurityGroup')],
-                "InstanceType": 'p2.xlarge',
-                "IamInstanceProfile": cf.ref('ECSEC2InstanceProfile'),
-                "UserData": {
+                InstanceType: 'p2.xlarge',
+                IamInstanceProfile: cf.ref('ECSEC2InstanceProfile'),
+                BlockDeviceMappings: [{
+                    DeviceName: '/dev/sdf',
+                    Ebs: {
+                        DeleteOnTermination: true,
+                        VolumeSize: 100
+                    }
+                }],
+                UserData: {
                     "Fn::Base64": {
                         "Fn::Join": [
                             "",
                             [
                                 "#!/bin/bash -xe\n",
+                                "# create mount point directory\n",
+                                "mkdir /mnt/xvdf\n",
+                                "# create ext4 filesystem on new volume\n",
+                                "mkfs -t ext4 /dev/xvdf\n",
+                                "# add an entry to fstab to mount volume during boot\n",
+                                "echo \"/dev/xvdf       /mnt/xvdf   ext4    defaults,nofail 0       2\" >> /etc/fstab\n",
+                                "# mount the volume on current boot\n",
+                                "mount -a\n",
                                 "echo ECS_CLUSTER=", cf.ref('ECSCluster'), " >> /etc/ecs/ecs.config\n",
                                 "echo ECS_IMAGE_PULL_BEHAVIOR=prefer-cached >> /etc/ecs/ecs.config\n",
                                 "yum install -y aws-cfn-bootstrap\n",
@@ -217,6 +232,9 @@ export default {
                 TaskRoleArn: cf.getAtt('TaskRole', 'Arn'),
                 Volumes: [{
                     Name: 'ModelStorage',
+                    Host: {
+                        SourcePath: '/mnt/xvdf'
+                    }
                 }],
                 ContainerDefinitions: [{
                     Name: 'gpu-api',
