@@ -1,14 +1,18 @@
-FROM pytorch/torchserve:latest
+FROM pytorch/pytorch:latest
 
 USER root
 
-RUN mkdir -p model-weights/ \
-    && curl -o model-weights/sam_vit_h_4b8939.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+RUN apt-get update && apt-get install -y curl
 
 RUN mkdir -p model-weights/ \
     && curl -o model-weights/sam_vit_h_4b8939.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 
-RUN pip install "onnxruntime==1.14.1" "onnx==1.13.1" "git+https://github.com/facebookresearch/segment-anything.git#567662b" awscli
+RUN mkdir -p model-weights/ \
+    && curl -o model-weights/sam_vit_h_4b8939.pth https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+
+RUN apt-get install -y git
+
+RUN pip install "onnxruntime==1.14.1" "onnx==1.13.1" "git+https://github.com/facebookresearch/segment-anything.git#567662b" torch-model-archiver awscli
 
 RUN mkdir -p /home/model-server/
 
@@ -30,10 +34,9 @@ RUN python scripts/export_onnx_model.py --checkpoint model-weights/sam_vit_h_4b8
 
 RUN torch-model-archiver --model-name sam_vit_h_decode --version 1.0.0 --serialized-file sam_vit_h_decode.onnx --handler handler_decode.py
 
-RUN mv *.mar model-store/ \
+RUN mkdir -p model-store \
+    && mv *.mar model-store/ \
     && rm *.onnx \
     && rm -rf model-weights
-
-WORKDIR /home/model-server
 
 # .mar files copied to s3 in gh action
