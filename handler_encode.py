@@ -66,7 +66,8 @@ class ModelHandler(BaseHandler):
         start = time()
         properties = context.system_properties
         model_dir = properties.get("model_dir")
-        self.device = torch.device("cuda:" + str(properties.get("gpu_id")) if torch.cuda.is_available() else "cpu")
+        # gpu_id is None if number_of_gpu=0 set in config.properties
+        self.device = torch.device("cuda:" + str(properties.get("gpu_id")) if torch.cuda.is_available() and str(properties.get("gpu_id")) != "None"  else "cpu")
         serialized_file = context.manifest['model']['serializedFile']
         model_path = os.path.join(model_dir, serialized_file)
         sam = sam_model_registry["default"](checkpoint=model_path)
