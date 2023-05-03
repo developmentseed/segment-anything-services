@@ -1,4 +1,5 @@
 .ipynb_checkpoints/
+node_modules/
 model-weights/
 models/
 model_store_decode/

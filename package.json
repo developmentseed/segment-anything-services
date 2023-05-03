@@ -1,0 +1,28 @@
+{
+    "name": "@developmentseed/segment-anything-geo",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Running segment-anything image embedding, prompting, and mask generation as torchserve services ",
+    "main": " ",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/developmentseed/segment-anything-geo.git"
+    },
+    "author": "Nick Ingalls <nick@ingalls.ca>",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/developmentseed/segment-anything-geo/issues"
+    },
+    "homepage": "https://github.com/developmentseed/segment-anything-geo#readme",
+    "devDependencies": {
+        "@openaddresses/batch-alarms": "^3.2.0",
+        "eslint": "^8.38.0",
+        "eslint-plugin-node": "^11.1.0"
+    },
+    "dependencies": {
+        "@openaddresses/cloudfriend": "^7.0.0"
+    }
+}

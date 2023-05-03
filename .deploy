@@ -1,0 +1,16 @@
+{
+    "profile": "devseedsam",
+    "artifacts": {
+        "docker": [
+            "sam-service:cpu-{{gitsha}}",
+            "sam-service:gpu-{{gitsha}}"
+        ]
+    },
+    "tags": [{
+        "Key": "Project",
+        "Value": "segment-anything-geo"
+    },{
+        "Key": "Client",
+        "Value": "labs"
+    }]
+}
