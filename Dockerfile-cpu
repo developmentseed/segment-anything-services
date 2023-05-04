@@ -9,28 +9,17 @@ RUN apt install unzip \
     && unzip awscliv2.zip \
     && ./aws/install
 
-COPY ./deployment/dockerd-entrypoint.sh /usr/local/bin/dockerd-entrypoint.sh
-
-RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
-
-RUN mkdir -p /home/model-server/ && mkdir -p /home/model-server/tmp
-
 COPY ./deployment/config_deocde.properties /home/model-server/config.properties
-
 COPY ./deployment/append_memory_setting.sh /home/model-server/append_memory_setting.sh
-
-RUN chmod +x /home/model-server/append_memory_setting.sh
-
-RUN /home/model-server/append_memory_setting.sh
+RUN chmod +x /home/model-server/append_memory_setting.sh \
+    && /home/model-server/append_memory_setting.sh
 
 COPY handler*.py ./
 
 COPY start ./
 
 WORKDIR /home/model-server
-
 ENV TEMP=/home/model-server/tmp
-
 ENV ENABLE_TORCH_PROFILER=TRUE
 
 CMD ./start
