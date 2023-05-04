@@ -15,7 +15,7 @@ RUN chmod +x /usr/local/bin/dockerd-entrypoint.sh
 
 RUN mkdir -p /home/model-server/ && mkdir -p /home/model-server/tmp
 
-COPY ./deployment/config_encode.properties /home/model-server/config.properties
+COPY ./deployment/config_deocde.properties /home/model-server/config.properties
 
 COPY ./deployment/append_memory_setting.sh /home/model-server/append_memory_setting.sh
 
@@ -29,7 +29,7 @@ COPY start ./
 
 WORKDIR /home/model-server
 
-ENV TEMP=/home/model-server/volume/tmp
+ENV TEMP=/home/model-server/tmp
 
 ENV ENABLE_TORCH_PROFILER=TRUE
 

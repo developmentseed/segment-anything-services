@@ -1,8 +1,13 @@
 #! /bin/bash
 set -xeuo pipefail
 
+# Used by GPU
 mkdir /home/model-server/volume/model-store || true
 mkdir /home/model-server/volume/tmp || true
+
+# Used by CPU
+mkdir /home/model-server/model-store || true
+mkdir /home/model-server/tmp || true
 
 aws s3 cp s3://segment-anything-services-prod-685980093638-us-east-1/${GitSha}/ ./volume/model-store/ --recursive
 
