@@ -277,6 +277,7 @@ export default {
                     }],
                     Environment: [
                         { Name: 'StackName', Value: cf.stackName },
+                        { Name: 'GitSha', Value: cf.ref('GitSha') },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region }
                     ],
                     LogConfiguration: {
