@@ -9,7 +9,7 @@ RUN apt install unzip \
     && unzip awscliv2.zip \
     && ./aws/install
 
-COPY ./deployment/config_deocde.properties /home/model-server/config.properties
+COPY ./deployment/config_decode.properties /home/model-server/config.properties
 COPY ./deployment/append_memory_setting.sh /home/model-server/append_memory_setting.sh
 RUN chmod +x /home/model-server/append_memory_setting.sh \
     && /home/model-server/append_memory_setting.sh
