@@ -1,1 +1,1 @@
-docker run -it --rm -p 8080:8080 -p 8081:8081 -p 8082:8082 -v $(pwd)/model_store:/home/model-server/model-store/ sam-gpu:latest sh -c "cd /home/model-server && mkdir -p tmp/ && torchserve --foreground --ts-config ./config.properties"
+docker run -it --rm -p 8080:8080 -p 8081:8081 -p 8082:8082 -v $(pwd)/model-store:/home/model-server/model-store/ sam-gpu:latest sh -c "cd /home/model-server && mkdir -p tmp/ && torchserve --foreground --ts-config ./config.properties"
