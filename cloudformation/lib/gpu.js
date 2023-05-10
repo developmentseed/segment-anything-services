@@ -89,6 +89,24 @@ export default {
                 }
             }
         },
+        ECSAutoScalingGroupScaleUpPolicy: {
+            Type: "AWS::AutoScaling::ScalingPolicy"
+            Properties: {
+                AdjustmentType: "ChangeInCapacity"
+                AutoScalingGroupName: cf.ref('ECSAutoScalingGroup'),
+                Cooldown: '300'
+                ScalingAdjustment: '1'
+            }
+        },
+        ECSAutoScalingGroupScaleDownPolicy: {
+            Type: "AWS::AutoScaling::ScalingPolicy"
+            Properties: {
+                AdjustmentType: "ChangeInCapacity"
+                AutoScalingGroupName: cf.ref('ECSAutoScalingGroup'),
+                Cooldown: '300'
+                ScalingAdjustment: '-1'
+            }
+        },
         ECSEC2InstanceProfile: {
             Type: 'AWS::IAM::InstanceProfile',
             Properties: {
