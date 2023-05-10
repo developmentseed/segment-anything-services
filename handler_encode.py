@@ -12,6 +12,7 @@ from io import BytesIO
 from typing import Union
 import os
 from time import time
+import json
 from segment_anything import sam_model_registry, SamPredictor
 # import ptvsd
 
@@ -148,7 +149,6 @@ def open_image(input_file: Union[str, BytesIO]) -> Image:
         except Exception as e:
             print(f'Error opening image {input_file}: {e}')
             raise
-
     else:
         print("trying to open image")
         image = Image.open(input_file)
@@ -172,7 +172,8 @@ def open_image(input_file: Union[str, BytesIO]) -> Image:
             image = image.rotate(IMAGE_ROTATIONS[orientation], expand=True)  # returns a rotated copy
     except Exception:
         pass
-
+    if image.size[0] * img.size[1] > 2048*2048:
+        raise ValueError(f"Image size {image.size} exceeded the 2048x2048 input size limit. Tile your image and submit tiles individually or resize the image to a smaller size.")
     return image
 
 
