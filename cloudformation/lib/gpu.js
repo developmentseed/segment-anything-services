@@ -2,6 +2,33 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        GPUECSCapacityProvider: {
+            Type: "AWS::ECS::CapacityProvider",
+            Properties: {
+                AutoScalingGroupProvider: {
+                    AutoScalingGroupArn: cf.ref('ECSAutoScalingGroup'),
+                    ManagedScaling: {
+                        MaximumScalingStepSize: 1,
+                        MinimumScalingStepSize: 1,
+                        Status: "ENABLED",
+                        TargetCapacity: 100
+                    },
+                    ManagedTerminationProtection: "ENABLED"
+                },
+            }
+        },
+        GPUECSCapacityProviderAssoc: {
+            Type : "AWS::ECS::ClusterCapacityProviderAssociations",
+            Properties : {
+                CapacityProviders : [cf.ref('GPUECSCapacityProvider')],
+                Cluster: cf.ref('ECSCluster'),
+                DefaultCapacityProviderStrategy: [{
+                    Base: 0,
+                    CapacityProvider: cf.ref('GPUECSCapacityProvider'),
+                    Weight: 1
+                }]
+            }
+        },
         GPUELB: {
             Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer',
             Properties: {
@@ -73,6 +100,7 @@ export default {
                     cf.ref('PublicSubnetA'),
                     cf.ref('PublicSubnetB'),
                 ],
+                NewInstancesProtectedFromScaleIn: true,
                 LaunchConfigurationName: cf.ref('ECSGPUContainerInstances'),
                 MinSize: 0,
                 MaxSize: 1,
@@ -87,24 +115,6 @@ export default {
                 AutoScalingReplacingUpdate: {
                     WillReplace: 'true'
                 }
-            }
-        },
-        ECSAutoScalingGroupScaleUpPolicy: {
-            Type: "AWS::AutoScaling::ScalingPolicy"
-            Properties: {
-                AdjustmentType: "ChangeInCapacity"
-                AutoScalingGroupName: cf.ref('ECSAutoScalingGroup'),
-                Cooldown: '300'
-                ScalingAdjustment: '1'
-            }
-        },
-        ECSAutoScalingGroupScaleDownPolicy: {
-            Type: "AWS::AutoScaling::ScalingPolicy"
-            Properties: {
-                AdjustmentType: "ChangeInCapacity"
-                AutoScalingGroupName: cf.ref('ECSAutoScalingGroup'),
-                Cooldown: '300'
-                ScalingAdjustment: '-1'
             }
         },
         ECSEC2InstanceProfile: {
