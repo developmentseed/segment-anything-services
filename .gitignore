@@ -8,3 +8,5 @@ notebooks/handler.ipynb
 grafana-enterprise_9.4.7_amd64.deb
 .devcontainer/
 .vscode/
+logs/
+model-store/

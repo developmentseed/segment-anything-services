@@ -2,26 +2,44 @@
 
 ## Quickstart
 
+### Building the container for creating the .mar archives
+
+Both models will be downloaded using the vit_h weights.
+
+```
+docker build -t sam-builder -f Dockerfile-build . 
+```
+
+### Copying the .mar archives to host for local testing
+
+```
+docker cp sam_builder_1:/home/model-store ./
+```
+
+We copy these to model-store and use this locally by both the GPU and the CPU Torchserve containers.
+
+you can delete the container once models are copied
+
+```
+docker rm -f sam_builder_1
+```
+
 ### Building the gpu torchserve container for image encoding
 With the GPU, inference time should be about 1.8 seconds or less depending on the GPU. On an older 1080 Ti Pascal GPU, inference time is 1.67 seconds without compilation.
 
 ```
-docker build -t torchserve-sam-gpu -f Dockerfile-gpu .
+docker build -t sam-gpu -f Dockerfile-gpu .
 bash start_serve_encode_gpu.sh
 ```
 
 ### Building the cpu torchserve container for image decoding
 
 ```
-docker build -t torchserve-sam-cpu -f Dockerfile-cpu .
+docker build -t sam-cpu -f Dockerfile-cpu .
 bash start_serve_decode_cpu.sh
 ```
 
-For both containers, both models will be downloaded using the vit_h weights and available as endpoints, but it is recommended to use the GPU for encoding and CPU for decoding.
-
-## Local Setup
-
-This project contains two seperate Torchserve services, one for the encoder (best run on a GPU) and the decoder (CPU). Check out the [original repo](https://github.com/facebookresearch/segment-anything) for more info.
+## Local Setup without Docker
 
 ### 1. Downloading model weights
 
