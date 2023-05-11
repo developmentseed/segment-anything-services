@@ -2,7 +2,8 @@ FROM pytorch/torchserve:latest-gpu
 
 USER root
 
-RUN apt install unzip git curl \
+RUN apt update \
+    && apt install -y unzip git curl \
     && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip \
     && ./aws/install
