@@ -3,7 +3,7 @@ name: AWS Model Builder
 on:
     push:
       branches:
-        - master
+        - main
     pull_request:
         types:
             - opened
