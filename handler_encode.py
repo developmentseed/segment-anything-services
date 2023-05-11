@@ -12,6 +12,7 @@ from io import BytesIO
 from typing import Union
 import os
 from time import time
+from ts.utils.util import PredictionException
 from segment_anything import sam_model_registry, SamPredictor
 # import ptvsd
 
@@ -54,7 +55,7 @@ class ModelHandler(BaseHandler):
             assert False
         image = np.asarray(image)
         image = np.ascontiguousarray(image)
-        print("XXXXX  Preprocess time: ", time()-start)
+        print(f"XXXXX  Preprocess time and shape {image.shape}: ", time()-start)
         return image
 
     def initialize(self, context):
@@ -102,6 +103,9 @@ class ModelHandler(BaseHandler):
         :return: prediction output
         """
         model_input = self.preprocess(data)
+        # im shape order is channel last
+        if model_input.shape[0] * model_input.shape[1] > 2048*2048:
+            raise PredictionException(f"Image size {model_input.shape} exceeded the 2048x2048 input size limit. Tile your image and submit tiles individually or resize the image to a smaller size.")
         model_output = self.inference(model_input)
         return self.postprocess(model_output)
 
@@ -148,7 +152,6 @@ def open_image(input_file: Union[str, BytesIO]) -> Image:
         except Exception as e:
             print(f'Error opening image {input_file}: {e}')
             raise
-
     else:
         print("trying to open image")
         image = Image.open(input_file)
@@ -172,7 +175,6 @@ def open_image(input_file: Union[str, BytesIO]) -> Image:
             image = image.rotate(IMAGE_ROTATIONS[orientation], expand=True)  # returns a rotated copy
     except Exception:
         pass
-
     return image
 
 

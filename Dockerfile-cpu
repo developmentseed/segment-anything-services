@@ -14,8 +14,6 @@ COPY ./deployment/append_memory_setting.sh /home/model-server/append_memory_sett
 RUN chmod +x /home/model-server/append_memory_setting.sh \
     && /home/model-server/append_memory_setting.sh
 
-COPY handler*.py ./
-
 COPY start ./
 
 WORKDIR /home/model-server
