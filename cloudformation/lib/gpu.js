@@ -3,22 +3,22 @@ import cf from '@openaddresses/cloudfriend';
 export default {
     Resources: {
         GPUECSCapacityProvider: {
-            Type: "AWS::ECS::CapacityProvider",
+            Type: 'AWS::ECS::CapacityProvider',
             Properties: {
                 AutoScalingGroupProvider: {
                     AutoScalingGroupArn: cf.ref('ECSAutoScalingGroup'),
                     ManagedScaling: {
                         MaximumScalingStepSize: 1,
                         MinimumScalingStepSize: 1,
-                        Status: "ENABLED",
+                        Status: 'ENABLED',
                         TargetCapacity: 100
                     },
-                    ManagedTerminationProtection: "ENABLED"
-                },
+                    ManagedTerminationProtection: 'ENABLED'
+                }
             }
         },
         GPUECSCapacityProviderAssoc: {
-            Type : "AWS::ECS::ClusterCapacityProviderAssociations",
+            Type : 'AWS::ECS::ClusterCapacityProviderAssociations',
             Properties : {
                 CapacityProviders : [cf.ref('GPUECSCapacityProvider')],
                 Cluster: cf.ref('ECSCluster'),
@@ -98,7 +98,7 @@ export default {
             Properties: {
                 VPCZoneIdentifier: [
                     cf.ref('PublicSubnetA'),
-                    cf.ref('PublicSubnetB'),
+                    cf.ref('PublicSubnetB')
                 ],
                 NewInstancesProtectedFromScaleIn: true,
                 LaunchConfigurationName: cf.ref('ECSGPUContainerInstances'),
@@ -121,45 +121,45 @@ export default {
             Type: 'AWS::IAM::InstanceProfile',
             Properties: {
                 Path: '/',
-                Roles: [ cf.ref('EC2Role') ]
+                Roles: [cf.ref('EC2Role')]
             }
         },
         ECSServiceRole: {
-            "Type": "AWS::IAM::Role",
-            "Properties": {
-                "AssumeRolePolicyDocument": {
-                    "Statement": [
+            'Type': 'AWS::IAM::Role',
+            'Properties': {
+                'AssumeRolePolicyDocument': {
+                    'Statement': [
                         {
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": [
-                                    "ecs.amazonaws.com"
+                            'Effect': 'Allow',
+                            'Principal': {
+                                'Service': [
+                                    'ecs.amazonaws.com'
                                 ]
                             },
-                            "Action": [
-                                "sts:AssumeRole"
+                            'Action': [
+                                'sts:AssumeRole'
                             ]
                         }
                     ]
                 },
-                "Path": "/",
-                "Policies": [
+                'Path': '/',
+                'Policies': [
                     {
-                        "PolicyName": "ecs-service",
-                        "PolicyDocument": {
-                            "Statement": [
+                        'PolicyName': 'ecs-service',
+                        'PolicyDocument': {
+                            'Statement': [
                                 {
-                                    "Effect": "Allow",
-                                    "Action": [
-                                        "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-                                        "elasticloadbalancing:DeregisterTargets",
-                                        "elasticloadbalancing:Describe*",
-                                        "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-                                        "elasticloadbalancing:RegisterTargets",
-                                        "ec2:Describe*",
-                                        "ec2:AuthorizeSecurityGroupIngress"
+                                    'Effect': 'Allow',
+                                    'Action': [
+                                        'elasticloadbalancing:DeregisterInstancesFromLoadBalancer',
+                                        'elasticloadbalancing:DeregisterTargets',
+                                        'elasticloadbalancing:Describe*',
+                                        'elasticloadbalancing:RegisterInstancesWithLoadBalancer',
+                                        'elasticloadbalancing:RegisterTargets',
+                                        'ec2:Describe*',
+                                        'ec2:AuthorizeSecurityGroupIngress'
                                     ],
-                                    "Resource": "*"
+                                    'Resource': '*'
                                 }
                             ]
                         }
@@ -168,15 +168,15 @@ export default {
             }
         },
         EC2Role: {
-            Type: "AWS::IAM::Role",
+            Type: 'AWS::IAM::Role',
             Properties: {
                 AssumeRolePolicyDocument: {
                     Statement: [{
                         Effect: 'Allow',
                         Principal: {
-                            Service: [ 'ec2.amazonaws.com' ]
+                            Service: ['ec2.amazonaws.com']
                         },
-                        Action: [ 'sts:AssumeRole' ]
+                        Action: ['sts:AssumeRole']
                     }]
                 },
                 Path: '/',
@@ -206,7 +206,7 @@ export default {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
                 GroupDescription: cf.join([cf.stackName, ' - Access to the ECS hosts that run containers']),
-                VpcId: cf.ref('VpcId'),
+                VpcId: cf.ref('VpcId')
             }
         },
         GPUEcsSecurityGroupIngressFromPublicALB: {
@@ -228,7 +228,7 @@ export default {
             }
         },
         ECSGPUContainerInstances: {
-            Type: "AWS::AutoScaling::LaunchConfiguration",
+            Type: 'AWS::AutoScaling::LaunchConfiguration',
             Properties: {
                 ImageId: 'ami-0035a5a4b40951ded',
                 InstanceType: 'p2.xlarge',
@@ -242,29 +242,29 @@ export default {
                     }
                 }],
                 UserData: {
-                    "Fn::Base64": {
-                        "Fn::Join": [
-                            "",
+                    'Fn::Base64': {
+                        'Fn::Join': [
+                            '',
                             [
-                                "#!/bin/bash -xe\n",
-                                "# create mount point directory\n",
-                                "mkdir /mnt/xvdf\n",
-                                "# create ext4 filesystem on new volume\n",
-                                "mkfs -t ext4 /dev/xvdf\n",
-                                "# add an entry to fstab to mount volume during boot\n",
-                                "echo \"/dev/xvdf       /mnt/xvdf   ext4    defaults,nofail 0       2\" >> /etc/fstab\n",
-                                "# mount the volume on current boot\n",
-                                "mount -a\n",
-                                "echo ECS_CLUSTER=", cf.ref('ECSCluster'), " >> /etc/ecs/ecs.config\n",
-                                "echo ECS_IMAGE_PULL_BEHAVIOR=prefer-cached >> /etc/ecs/ecs.config\n",
-                                "yum install -y aws-cfn-bootstrap\n",
-                                "/opt/aws/bin/cfn-signal -e $? ",
-                                "         --stack ",
+                                '#!/bin/bash -xe\n',
+                                '# create mount point directory\n',
+                                'mkdir /mnt/xvdf\n',
+                                '# create ext4 filesystem on new volume\n',
+                                'mkfs -t ext4 /dev/xvdf\n',
+                                '# add an entry to fstab to mount volume during boot\n',
+                                'echo "/dev/xvdf       /mnt/xvdf   ext4    defaults,nofail 0       2" >> /etc/fstab\n',
+                                '# mount the volume on current boot\n',
+                                'mount -a\n',
+                                'echo ECS_CLUSTER=', cf.ref('ECSCluster'), ' >> /etc/ecs/ecs.config\n',
+                                'echo ECS_IMAGE_PULL_BEHAVIOR=prefer-cached >> /etc/ecs/ecs.config\n',
+                                'yum install -y aws-cfn-bootstrap\n',
+                                '/opt/aws/bin/cfn-signal -e $? ',
+                                '         --stack ',
                                 cf.stackName,
-                                "         --resource ECSAutoScalingGroup ",
-                                "         --region ",
+                                '         --resource ECSAutoScalingGroup ',
+                                '         --region ',
                                 cf.region,
-                                "\n"
+                                '\n'
                             ]
                         ]
                     }
@@ -351,7 +351,7 @@ export default {
                     ToPort: 8080
                 }]
             }
-        },
+        }
     },
     Outputs: {
         GPU: {

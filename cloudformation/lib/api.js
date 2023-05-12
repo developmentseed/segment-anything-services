@@ -170,7 +170,7 @@ export default {
                     ToPort: 7080
                 }]
             }
-        },
+        }
     },
     Outputs: {
         API: {
