@@ -40,13 +40,23 @@ export default cf.merge(
         }
     },
     ELBAlarms({
-        prefix: 'Batch',
+        prefix: 'CPU',
         email: cf.ref('AlarmEmail'),
         apache: cf.stackName,
         cluster: cf.ref('ECSCluster'),
         service: cf.getAtt('Service', 'Name'),
         loadbalancer: cf.getAtt('ELB', 'LoadBalancerFullName'),
         targetgroup: cf.getAtt('TargetGroup', 'TargetGroupFullName')
+
+    }),
+    ELBAlarms({
+        prefix: 'GPU',
+        email: cf.ref('AlarmEmail'),
+        apache: cf.stackName,
+        cluster: cf.ref('ECSCluster'),
+        service: cf.getAtt('GPUService', 'Name'),
+        loadbalancer: cf.getAtt('GPUELB', 'LoadBalancerFullName'),
+        targetgroup: cf.getAtt('GPUTargetGroup', 'TargetGroupFullName')
 
     })
 );

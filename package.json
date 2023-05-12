@@ -19,7 +19,7 @@
     },
     "homepage": "https://github.com/developmentseed/segment-anything-geo#readme",
     "devDependencies": {
-        "@openaddresses/batch-alarms": "^3.2.0",
+        "@openaddresses/batch-alarms": "^4.0.0",
         "eslint": "^8.38.0",
         "eslint-plugin-node": "^11.1.0"
     },
