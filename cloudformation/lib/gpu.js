@@ -328,7 +328,6 @@ export default {
                 ServiceName: cf.join('-', [cf.stackName, 'GPUService']),
                 Cluster: cf.ref('ECSCluster'),
                 TaskDefinition: cf.ref('GPUTaskDefinition'),
-                LaunchType: 'EC2',
                 HealthCheckGracePeriodSeconds: 300,
                 DesiredCount: 1,
                 Role: cf.ref('ECSServiceRole'),
