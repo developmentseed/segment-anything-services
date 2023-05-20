@@ -13,7 +13,8 @@ docker build -t sam-builder -f Dockerfile-build .
 ### Copying the .mar archives to host for local testing
 
 ```
-docker cp sam_builder_1:/home/model-store ./
+docker run -d --name sam-builder1 sam-builder
+docker cp sam-builder1:/home/model-store ./
 ```
 
 We copy these to model-store and use this locally by both the GPU and the CPU Torchserve containers.
@@ -21,7 +22,7 @@ We copy these to model-store and use this locally by both the GPU and the CPU To
 you can delete the container once models are copied
 
 ```
-docker rm -f sam_builder_1
+docker rm -f sam-builder1
 ```
 
 ### Building the gpu torchserve container for image encoding
