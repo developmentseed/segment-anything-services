@@ -2,6 +2,60 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        GPUNoTrafficAlarm: {
+            Type: 'AWS::CloudWatch::Alarm',
+            Properties: {
+                AlarmName: cf.join([cf.stackName, '-no-gpu-traffic']),
+                ActionsEnabled: true,
+                OKActions: [],
+                AlarmActions: [cf.ref('GPUServiceAutoScalingPolicy')],
+                InsufficientDataActions: [],
+                MetricName: 'RequestCountPerTarget',
+                Namespace: 'AWS/ApplicationELB',
+                Statistic: 'Sum',
+                Dimensions: [{
+                    Name: 'TargetGroup',
+                    Value: cf.getAtt('GPUTargetGroup', 'TargetGroupFullName')
+                }],
+                Period: 300,
+                EvaluationPeriods: 4,
+                DatapointsToAlarm: 4,
+                Threshold: 0,
+                ComparisonOperator: 'LessThanOrEqualToThreshold',
+                TreatMissingData: 'breaching'
+            }
+        },
+        GPUServiceAutoScalingTarget: {
+            Type: 'AWS::ApplicationAutoScaling::ScalableTarget',
+            Properties: {
+                MaxCapacity: 1,
+                MinCapacity: 0,
+                ResourceId: cf.join(['service/', cf.ref('ECSCluster'), '/', cf.getAtt('GPUService', 'Name')]),
+                RoleARN: cf.getAtt('ScalingRole', 'Arn'),
+                ScalableDimension: 'ecs:service:DesiredCount',
+                ServiceNamespace: 'ecs'
+            }
+        },
+        GPUServiceAutoScalingPolicy: {
+            Type: 'AWS::ApplicationAutoScaling::ScalingPolicy',
+            DependsOn: ['GPUServiceAutoScalingTarget'],
+            Properties: {
+                PolicyName: cf.join([cf.stackName, '-gpu-autoscaling']),
+                PolicyType: 'StepScaling',
+                ResourceId: cf.join(['service/', cf.ref('ECSCluster'), '/', cf.getAtt('GPUService', 'Name')]),
+                ScalableDimension: 'ecs:service:DesiredCount',
+                ServiceNamespace: 'ecs',
+                StepScalingPolicyConfiguration: {
+                    AdjustmentType: 'ChangeInCapacity',
+                    Cooldown: 60,
+                    MetricAggregationType: 'Maximum',
+                    StepAdjustments: [{
+                        MetricIntervalUpperBound: 0,
+                        ScalingAdjustment: -1
+                    }]
+                }
+            }
+        },
         GPUECSCapacityProvider: {
             Type: 'AWS::ECS::CapacityProvider',
             Properties: {
