@@ -2,6 +2,60 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        CPUNoTrafficAlarm: {
+            Type: 'AWS::CloudWatch::Alarm',
+            Properties: {
+                AlarmName: cf.join([cf.stackName, '-no-cpu-traffic']),
+                ActionsEnabled: true,
+                OKActions: [],
+                AlarmActions: [],
+                InsufficientDataActions: [],
+                MetricName: 'RequestCountPerTarget',
+                Namespace: 'AWS/ApplicationELB',
+                Statistic: 'Sum',
+                Dimensions: [{
+                    Name: 'TargetGroup',
+                    Value: cf.getAtt('TargetGroup', 'TargetGroupFullName')
+                }],
+                Period: 300,
+                EvaluationPeriods: 4,
+                DatapointsToAlarm: 4,
+                Threshold: 0,
+                ComparisonOperator: 'LessThanThreshold',
+                TreatMissingData: 'breaching'
+            }
+        },
+        CPUServiceAutoScalingTarget: {
+            Type: 'AWS::ApplicationAutoScaling::ScalableTarget',
+            Properties: {
+                MaxCapacity: 1,
+                MinCapacity: 0,
+                ResourceId: cf.join(['service/', cf.ref('ECSCluster'), '/', cf.getAtt('Service', 'Name')]),
+                RoleARN: cf.getAtt('ScalingRole', 'Arn'),
+                ScalableDimension: 'ecs:service:DesiredCount',
+                ServiceNamespace: 'ecs'
+            }
+        },
+        CPUServiceAutoScalingPolicy: {
+            Type: 'AWS::ApplicationAutoScaling::ScalingPolicy',
+            DependsOn: ['CPUServiceAutoScalingTarget'],
+            Properties: {
+                PolicyName: cf.join([cf.stackName, '-cpu-autoscaling']),
+                PolicyType: 'StepScaling',
+                ResourceId: cf.join(['service/', cf.ref('ECSCluster'), '/', cf.getAtt('Service', 'Name')]),
+                ScalableDimension: 'ecs:service:DesiredCount',
+                ServiceNamespace: 'ecs',
+                StepScalingPolicyConfiguration: {
+                    AdjustmentType: 'ChangeInCapacity',
+                    Cooldown: 60,
+                    MetricAggregationType: 'Maximum',
+                    StepAdjustments: [{
+                        MetricIntervalUpperBound: 0,
+                        ScalingAdjustment: -1
+                    }]
+                }
+            }
+        },
         ELB: {
             Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer',
             Properties: {

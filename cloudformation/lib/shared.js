@@ -2,6 +2,47 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        ScalingRole: {
+            Type: 'AWS::IAM::Role',
+            Properties: {
+                RoleName: cf.join([cf.stackName, '-scaling-role']),
+                AssumeRolePolicyDocument: {
+                    Version: "2012-10-17",
+                    Statement: [{
+                        Effect: 'Allow',
+                        Principal: {
+                            Service: ['application-autoscaling.amazonaws.com'],
+                        },
+                        Action: [ 'sts:AssumeRole' ]
+                    }]
+                }
+            }
+        },
+        ScalingRolePolicy: {
+            Type: 'AWS::IAM::Policy',
+            Properties: {
+                Roles: [cf.ref('ScalingRole')],
+                PolicyName: cf.join([cf.stackName, '-scaling-policy']),
+                PolicyDocument: {
+                    Version: '2012-10-17',
+                    Statement: [{
+                        Effect: 'Allow',
+                        Action: [
+                            'application-autoscaling:*',
+                            'ecs:RunTask',
+                            'ecs:UpdateSerice',
+                            'ecs:DescribeServices',
+                            'cloudwatch:PutMetricAlarm',
+                            'cloudwatch:DescribeAlarms',
+                            'cloudwatch:GetMetricStatistics',
+                            'cloudwatch:SetAlarmState',
+                            'cloudwatch:DeleteAlarms'
+                        ],
+                        Resource: '*'
+                    }]
+                }
+            }
+        },
         Logs: {
             Type: 'AWS::Logs::LogGroup',
             Properties: {
