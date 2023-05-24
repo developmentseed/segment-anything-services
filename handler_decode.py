@@ -10,11 +10,9 @@ from typing import Union
 import os
 from time import time
 from segment_anything.utils.transforms import ResizeLongestSide
+from rasterio.io import MemoryFile
 import onnxruntime
-# import ptvsd
 
-# ptvsd.enable_attach(address=('0.0.0.0', 6789), redirect_output=True)
-# ptvsd.wait_for_attach()
 np.random.seed(42)
 os.environ["PYTHONHASHSEED"] = "42"
 
@@ -96,21 +94,59 @@ class ModelHandler(BaseHandler):
         # masks are not thresholded, threshold them client side with 
         # masks = masks > predictor.model.mask_threshold
         return masks
-    
+
+    def geojson(self, masks, crs, bbox):
+        """
+        Georeferences the output mask prediction using rasterio and the georeferencing information from a given geotiff.
+        :param masks: output mask prediction from the model
+
+        :return: a georeferenced version of the mask prediction in bytes
+        """
+        transform = from_bounds(*bbox, mask.shape[1], mask.shape[0])
+
+        with MemoryFile() as memfile:
+            with memfile.open(
+                    driver='GTiff',
+                    height=masks.shape[0],
+                    width=masks.shape[1],
+                    count=masks.shape[2],
+                    dtype=str(masks.dtype),
+                    crs=crs,
+                    transform=transform
+                ) as dst:
+                dst.write(masks, 1)
+            
+            return memfile.read()
+
     def postprocess(self, masks):
-        base64_encoded_masks = base64.b64encode(masks.flatten()).decode("utf-8")
-        return [{"status": "success", "masks": base64_encoded_masks}]
+        if isinstance(masks, np.ndarray):
+            base64_encoded_masks = base64.b64encode(masks.flatten()).decode("utf-8")
+            data_type = "ndarray"
+        else:  # assuming it's binary data of a GeoTiff file
+            base64_encoded_masks = base64.b64encode(masks).decode("utf-8")
+            data_type = "geotiff"
+        return [{"status": "success", "masks": base64_encoded_masks, "data_type": data_type}]
     
     def handle(self, data, context):
         """
         Invoke by TorchServe for prediction request.
-        Do pre-processing of data, prediction using model and postprocessing of prediciton output
+        Do pre-processing of data, prediction using model and postprocessing of prediction output
         :param data: Input data for prediction
         :param context: Initial context contains model server system properties.
         :return: prediction output
         """
         model_input = self.preprocess(data)
         model_output = self.inference(model_input)
+        crs = self.payload.get('crs')
+        bbox = self.payload.get('bbox')
+        if crs is not None and bbox is not None:
+            model_output = self.georeference(model_output, crs, bbox)
+        elif crs is not None and bbox is None:
+            raise ValueError("Both crs and bbox must be specified")
+        elif crs is None and bbox is not None:
+            raise ValueError("Both crs and bbox must be specified")
+        else:
+            pass
         return self.postprocess(model_output)
 
 
