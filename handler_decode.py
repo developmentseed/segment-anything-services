@@ -79,8 +79,8 @@ class ModelHandler(BaseHandler):
         resizer = ResizeLongestSide(1024) # 1024 is the max for the export onnx example nb
         onnx_coord = np.concatenate([np.array(self.payload['input_point'])[np.newaxis,:], np.array([[0.0, 0.0]])], axis=0)[None, :, :]
         onnx_label = np.concatenate([np.array([self.payload['input_label']]), np.array([-1])], axis=0)[None, :].astype(np.float32)
-        onnx_coord = resizer.apply_coords(onnx_coord, self.payload['image_shape'][:2]).astype(np.float32)
-        onnx_mask_input = np.zeros((1, 1, 256, 256), dtype=np.float32)
+        onnx_coord = resizer.apply_coords(onnx_coord, self.properties.get("img_shape")).astype(np.float32)
+        onnx_mask_input = np.zeros((1, 1, *self.properties.get("img_shape")), dtype=torch.float)
         onnx_has_mask_input = np.zeros(1, dtype=np.float32)
         ort_inputs = {
             "image_embeddings": image_embeddings,
@@ -88,14 +88,15 @@ class ModelHandler(BaseHandler):
             "point_labels": onnx_label,
             "mask_input": onnx_mask_input,
             "has_mask_input": onnx_has_mask_input,
-            "orig_im_size": np.array(self.payload['image_shape'][:2], dtype=np.float32)
+            "orig_im_size": np.array(self.properties.get("img_shape"), dtype=torch.float)
         }
-        masks, _, low_res_logits = self.ort_session.run(None, ort_inputs)
+        masks, scores, _ = self.ort_session.run(None, ort_inputs)
+        highest_confidence_mask = masks[:,np.argmax(scores),:,:]
         print("XXXXX  Inference time: ", time()-start)
         print("XXXXXXX masks shape", masks.shape)
         # masks are not thresholded, threshold them client side with 
         # masks = masks > predictor.model.mask_threshold
-        return masks
+        return highest_confidence_mask
     
     def postprocess(self, masks):
         base64_encoded_masks = base64.b64encode(masks.flatten()).decode("utf-8")
