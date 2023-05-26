@@ -285,7 +285,7 @@ export default {
             Type: 'AWS::AutoScaling::LaunchConfiguration',
             Properties: {
                 ImageId: 'ami-0035a5a4b40951ded',
-                InstanceType: 'p2.xlarge',
+                InstanceType: 'p3.xlarge',
                 SecurityGroups: [cf.ref('GPUEcsHostSecurityGroup')],
                 IamInstanceProfile: cf.ref('ECSEC2InstanceProfile'),
                 BlockDeviceMappings: [{
