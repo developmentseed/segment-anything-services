@@ -15,6 +15,7 @@ import rasterio
 from pyproj import CRS, Transformer
 from shapely import ops
 from shapely.geometry import mapping, shape, MultiPolygon
+import json
 from rasterio import features
 # import ptvsd
 
@@ -99,10 +100,10 @@ class ModelHandler(BaseHandler):
         masks = masks > .5 # TODO make this configurable
         print("XXXXX  Inference time: ", time()-start)
         print("XXXXXXX ambiguous mask proposals shape for single point", masks.shape) #(512,512) for single point mask
-        return masks, scores[0]
+        return masks[0], scores[0]
     
     def mask_to_geojson(self, mask, scores):
-        transform = rasterio.transform.from_bounds(*self.payload.get("bbox"), mask.shape[2], mask.shape[1])
+        transform = rasterio.transform.from_bounds(*self.payload.get("bbox"), mask.shape[1], mask.shape[0])
         # A list to store all features
         all_polygons = []
 
@@ -124,8 +125,8 @@ class ModelHandler(BaseHandler):
         multipolygon_reprojected = ops.transform(transformer.transform, multi_polygon)
         multi_polygon_geojson = mapping(multipolygon_reprojected)
         multi_polygon_geojson['properties'] = {"class_label": self.payload.get('input_label'), 
-                                               "confidence_scores": scores}
-        return multi_polygon_geojson
+                                               "confidence_scores": [np_to_py_type(score) for score in scores]}
+        return json.dumps(multi_polygon_geojson)
 
     def postprocess(self, masks):
         if isinstance(masks, np.ndarray):
@@ -143,12 +144,17 @@ class ModelHandler(BaseHandler):
         """
         model_input = self.preprocess(data)
         # (N,512,512) mask input for single point, ambiguous proposals, highest conf not always best
-        model_output, scores = self.inference_single_point(model_input)
+        masks, scores = self.inference_single_point(model_input)
         if self.payload.get("crs") is not None and self.payload.get("bbox") is not None:
-            for mask in model_output[0]:# need to clean this up and apply conversion to each ambiguous mask
-                model_output = self.mask_to_geojson(mask, scores)
-        masks = self.postprocess(model_output)
-        return [{"status": "success", "masks": masks, "confidence_scores": [np_to_py_type(score) for score in scores]}]
+            geojsons = []
+            for mask in masks:# need to clean this up and apply conversion to each ambiguous mask
+                print(f"xxxxxxxxxShape mask: {mask.shape}")
+                multipolygon = self.mask_to_geojson(mask, scores)
+                geojsons.append(multipolygon)
+            return [{"status": "success", "geojsons": geojsons, "confidence_scores": [np_to_py_type(score) for score in scores]}]
+        else:
+            masks = self.postprocess(masks)
+            return [{"status": "success", "masks": masks, "confidence_scores": [np_to_py_type(score) for score in scores]}]
 
 def np_to_py_type(o):
     if isinstance(o, np.generic):
