@@ -11,6 +11,12 @@ import os
 from time import time
 from segment_anything.utils.transforms import ResizeLongestSide
 import onnxruntime
+import rasterio
+from pyproj import CRS, Transformer
+from shapely import ops
+from shapely.geometry import mapping, shape, MultiPolygon
+import json
+from rasterio import features
 # import ptvsd
 
 # ptvsd.enable_attach(address=('0.0.0.0', 6789), redirect_output=True)
@@ -69,7 +75,7 @@ class ModelHandler(BaseHandler):
         self.initialized = True
         print("XXXXX  Initialization time: ", time()-start)
 
-    def inference(self, image_embeddings):
+    def inference_single_point(self, image_embeddings):
         """
         Internal inference methods
         :param model_input: transformed model input data
@@ -79,7 +85,7 @@ class ModelHandler(BaseHandler):
         resizer = ResizeLongestSide(1024) # 1024 is the max for the export onnx example nb
         onnx_coord = np.concatenate([np.array(self.payload['input_point'])[np.newaxis,:], np.array([[0.0, 0.0]])], axis=0)[None, :, :]
         onnx_label = np.concatenate([np.array([self.payload['input_label']]), np.array([-1])], axis=0)[None, :].astype(np.float32)
-        onnx_coord = resizer.apply_coords(onnx_coord, self.payload['image_shape'][:2]).astype(np.float32)
+        onnx_coord = resizer.apply_coords(onnx_coord, self.payload.get("image_shape")).astype(np.float32)
         onnx_mask_input = np.zeros((1, 1, 256, 256), dtype=np.float32)
         onnx_has_mask_input = np.zeros(1, dtype=np.float32)
         ort_inputs = {
@@ -88,18 +94,45 @@ class ModelHandler(BaseHandler):
             "point_labels": onnx_label,
             "mask_input": onnx_mask_input,
             "has_mask_input": onnx_has_mask_input,
-            "orig_im_size": np.array(self.payload['image_shape'][:2], dtype=np.float32)
+            "orig_im_size": np.array(self.payload.get("image_shape"), dtype=np.float32)
         }
-        masks, _, low_res_logits = self.ort_session.run(None, ort_inputs)
+        masks, scores, low_res_logits = self.ort_session.run(None, ort_inputs)
+        masks = masks > .5 # TODO make this configurable
         print("XXXXX  Inference time: ", time()-start)
-        print("XXXXXXX masks shape", masks.shape)
-        # masks are not thresholded, threshold them client side with 
-        # masks = masks > predictor.model.mask_threshold
-        return masks
+        print("XXXXXXX ambiguous mask proposals shape for single point", masks.shape) #(512,512) for single point mask
+        return masks[0], scores[0]
     
+    def mask_to_geojson(self, mask, scores):
+        transform = rasterio.transform.from_bounds(*self.payload.get("bbox"), mask.shape[1], mask.shape[0])
+        # A list to store all features
+        all_polygons = []
+
+        # Generate shapes from each mask
+        for geoshape, value in features.shapes(mask.astype(np.uint8), mask=mask, transform=transform):
+            # Convert each shape to GeoJSON
+            polygon = shape(geoshape)
+            all_polygons.append(polygon)
+
+        # Merge all polygons into a single MultiPolygon
+        multi_polygon = MultiPolygon(all_polygons)
+        # Define the source CRS
+        crs_source = CRS(self.payload.get("crs"))
+        # Define the target CRS
+        crs_target = CRS("EPSG:4326")
+        # Initialize the transformer
+        transformer = Transformer.from_crs(crs_source, crs_target, always_xy=True)
+        # Reproject all polygons
+        multipolygon_reprojected = ops.transform(transformer.transform, multi_polygon)
+        multi_polygon_geojson = mapping(multipolygon_reprojected)
+        multi_polygon_geojson['properties'] = {"class_label": self.payload.get('input_label'), 
+                                               "confidence_scores": [np_to_py_type(score) for score in scores]}
+        return json.dumps(multi_polygon_geojson)
+
     def postprocess(self, masks):
-        base64_encoded_masks = base64.b64encode(masks.flatten()).decode("utf-8")
-        return [{"status": "success", "masks": base64_encoded_masks}]
+        if isinstance(masks, np.ndarray):
+            # it's not georeferenced, we encode the np array. otherwise it's a geojson
+            masks = base64.b64encode(masks.flatten()).decode("utf-8")
+        return masks
     
     def handle(self, data, context):
         """
@@ -110,9 +143,23 @@ class ModelHandler(BaseHandler):
         :return: prediction output
         """
         model_input = self.preprocess(data)
-        model_output = self.inference(model_input)
-        return self.postprocess(model_output)
+        # (N,512,512) mask input for single point, ambiguous proposals, highest conf not always best
+        masks, scores = self.inference_single_point(model_input)
+        if self.payload.get("crs") is not None and self.payload.get("bbox") is not None:
+            geojsons = []
+            for mask in masks:# need to clean this up and apply conversion to each ambiguous mask
+                print(f"xxxxxxxxxShape mask: {mask.shape}")
+                multipolygon = self.mask_to_geojson(mask, scores)
+                geojsons.append(multipolygon)
+            return [{"status": "success", "geojsons": geojsons, "confidence_scores": [np_to_py_type(score) for score in scores]}]
+        else:
+            masks = self.postprocess(masks)
+            return [{"status": "success", "masks": masks, "confidence_scores": [np_to_py_type(score) for score in scores]}]
 
+def np_to_py_type(o):
+    if isinstance(o, np.generic):
+        return o.item()  
+    raise TypeError
 
 def open_image(input_file: Union[str, BytesIO]) -> Image:
     """
