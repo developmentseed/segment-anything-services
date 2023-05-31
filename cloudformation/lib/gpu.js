@@ -150,6 +150,7 @@ export default {
             Type: 'AWS::AutoScaling::AutoScalingGroup',
             DependsOn: ['GPUService'],
             Properties: {
+                AutoScalingGroupName: cf.stackName,
                 VPCZoneIdentifier: [
                     cf.ref('PublicSubnetA'),
                     cf.ref('PublicSubnetB')
@@ -179,46 +180,36 @@ export default {
             }
         },
         ECSServiceRole: {
-            'Type': 'AWS::IAM::Role',
-            'Properties': {
-                'AssumeRolePolicyDocument': {
-                    'Statement': [
-                        {
-                            'Effect': 'Allow',
-                            'Principal': {
-                                'Service': [
-                                    'ecs.amazonaws.com'
-                                ]
-                            },
-                            'Action': [
-                                'sts:AssumeRole'
-                            ]
-                        }
-                    ]
+            Type: 'AWS::IAM::Role',
+            Properties: {
+                AssumeRolePolicyDocument: {
+                    Statement: [{
+                        Effect: 'Allow',
+                        Principal: {
+                            Service: [ 'ecs.amazonaws.com' ]
+                        },
+                        Action: [ 'sts:AssumeRole' ]
+                    }]
                 },
-                'Path': '/',
-                'Policies': [
-                    {
-                        'PolicyName': 'ecs-service',
-                        'PolicyDocument': {
-                            'Statement': [
-                                {
-                                    'Effect': 'Allow',
-                                    'Action': [
-                                        'elasticloadbalancing:DeregisterInstancesFromLoadBalancer',
-                                        'elasticloadbalancing:DeregisterTargets',
-                                        'elasticloadbalancing:Describe*',
-                                        'elasticloadbalancing:RegisterInstancesWithLoadBalancer',
-                                        'elasticloadbalancing:RegisterTargets',
-                                        'ec2:Describe*',
-                                        'ec2:AuthorizeSecurityGroupIngress'
-                                    ],
-                                    'Resource': '*'
-                                }
-                            ]
-                        }
+                Path: '/',
+                Policies: [{
+                    PolicyName: 'ecs-service',
+                    PolicyDocument: {
+                        Statement: [{
+                            Effect: 'Allow',
+                            Action: [
+                                'elasticloadbalancing:DeregisterInstancesFromLoadBalancer',
+                                'elasticloadbalancing:DeregisterTargets',
+                                'elasticloadbalancing:Describe*',
+                                'elasticloadbalancing:RegisterInstancesWithLoadBalancer',
+                                'elasticloadbalancing:RegisterTargets',
+                                'ec2:Describe*',
+                                'ec2:AuthorizeSecurityGroupIngress'
+                            ],
+                            Resource: '*'
+                        }]
                     }
-                ]
+                }]
             }
         },
         EC2Role: {
