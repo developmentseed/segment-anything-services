@@ -17,7 +17,7 @@ export default {
                     Name: 'TargetGroup',
                     Value: cf.getAtt('GPUTargetGroup', 'TargetGroupFullName')
                 }],
-                Period: 300,
+                Period: 600,
                 EvaluationPeriods: 4,
                 DatapointsToAlarm: 4,
                 Threshold: 0,
