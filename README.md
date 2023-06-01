@@ -40,6 +40,12 @@ docker build -t sam-cpu -f Dockerfile-cpu .
 bash start_serve_decode_cpu.sh
 ```
 
+### Test the encode service on the CPU
+The CPU service is served on 7080 by default. 8080 for the GPU service by default.
+```
+curl http://127.0.0.1:7080/predictions/sam_vit_h_encode -T ./data/sample-img-fox.jpg
+```
+
 ## Local Setup without Docker
 
 ### 1. Downloading model weights
