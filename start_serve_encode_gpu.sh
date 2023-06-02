@@ -1,1 +1,1 @@
-docker run -it --rm -p 8080:8080 -p 8081:8081 -p 8082:8082 -v $(pwd)/model-store:/home/model-server/volume/model-store/ --gpus all sam-gpu:latest sh -c "cd /home/model-server && mkdir -p volume/tmp && torchserve --foreground --ts-config ./config.properties"
+docker run -it --rm -p 8080:8080 -p 8081:8081 -p 8082:8082 -v $(pwd)/model-store/sam_vit_h_encode.mar:/home/model-server/volume/model-store/sam_vit_h_encode.mar --gpus all sam-gpu:latest sh -c "cd /home/model-server && mkdir -p volume/tmp && torchserve --foreground --ts-config ./config.properties"
