@@ -9,7 +9,7 @@ grafana-enterprise_9.4.7_amd64.deb
 .devcontainer/
 .vscode/
 logs/
-model-store/
+model-store/*.mar
 .deployrc.json
 Untitled.ipynb
 data/HR_Landcover/

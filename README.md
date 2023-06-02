@@ -1,5 +1,10 @@
 # Segment Anything Encoder and Decoder as Services
 
+![Oil slick captured by Sentinel-1 Segmented](slick_example.png)
+
+![Burn Scar captured by Sentinel-2 Segmented](burn_scar_sam_example.png)
+
+
 ## Quickstart
 
 ### Building the container for creating the .mar archives
@@ -7,7 +12,7 @@
 Both models will be downloaded using the vit_h weights.
 
 ```
-docker build -t sam-builder -f Dockerfile-build . 
+docker build -t sam-builder -f Dockerfile-build .
 ```
 
 ### Copying the .mar archives to host for local testing
@@ -64,14 +69,14 @@ This step takes a long time presumably because the uncompiled weights are massiv
 
 ```
 mkdir -p model_store_encode
-torch-model-archiver --model-name sam_vit_h_encode --version 1.0.0 --serialized-file model-weights/sam_vit_h_4b8939.pth --handler handler_encode.py 
+torch-model-archiver --model-name sam_vit_h_encode --version 1.0.0 --serialized-file model-weights/sam_vit_h_4b8939.pth --handler handler_encode.py
 mv sam_vit_h_encode.mar model_store_encode/sam_vit_h_encode.mar
 ```
 
 ### 2b. Exporting the ONNX model for CPU decoding
 
 ```
-mkdir -p models                    
+mkdir -p models
 python scripts/export_onnx_model.py --checkpoint model-weights/sam_vit_h_4b8939.pth --model-type vit_h --output models/sam_vit_h_decode.onnx
 ```
 
@@ -116,6 +121,7 @@ Q: Why two services?
 A: We're exploring cost effective ways to run image encoding in a separate, on-demand way from the CPU decoder. Eventually we'd like to remove the need for the CPU torserve on the backend and run the decoding in the browser.
 
 Q: Can I contribute or ask questions?
+
 A: This is currently more of a "working in the open" type repo that we'd like to share with others, rather than a maintained project. But feel free to open an issue if you have an idea. Please understand if we don't respond or are slow to respond.
 
 ## License
