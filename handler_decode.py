@@ -103,7 +103,7 @@ class ModelHandler(BaseHandler):
         return masks[0], scores[0]
     
     def mask_to_geojson(self, mask, scores):
-        transform = rasterio.transform.from_bounds(*self.payload.get("bbox"), mask.shape[1], mask.shape[0])
+        transform = rasterio.transform.from_bounds(*self.payload.get("bbox"), mask.shape[0], mask.shape[1])
         # A list to store all features
         all_polygons = []
 
