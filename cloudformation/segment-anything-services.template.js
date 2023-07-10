@@ -2,6 +2,7 @@ import cf from '@openaddresses/cloudfriend';
 import API from './lib/api.js';
 import GPU from './lib/gpu.js';
 import S3 from './lib/s3.js';
+import UI from './lib/ui.js';
 import Shared from './lib/shared.js';
 import {
     ELB as ELBAlarms
@@ -9,6 +10,7 @@ import {
 
 export default cf.merge(
     S3,
+    UI,
     Shared,
     API,
     GPU,
