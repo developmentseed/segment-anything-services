@@ -33,7 +33,7 @@ export default {
                 DistributionConfig: {
                     Origins: [{
                         DomainName: cf.getAtt('FrontendBucket', 'DomainName'),
-                        OriginPath: cf.ref('GitSha'),
+                        OriginPath: cf.join(['/', cf.ref('GitSha')]),
                         Id: "FrontEndOrigin",
                         S3OriginConfig: {
                             OriginAccessIdentity: cf.join(['origin-access-identity/cloudfront/', cf.ref('CloudFrontAccessIdentity')])

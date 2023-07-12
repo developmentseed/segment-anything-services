@@ -23,5 +23,5 @@ jobs:
               with:
                   node-version: 20
 
-            - run: cd web && npm install && npm run build
+            - run: cd web && npm install && npm run build && aws s3 cp --recursive dist/ s3://segment-anything-services-prod-frontend-685980093638-us-east-1/${{github.event.pull_request.head.sha || github.sha}}/
 
