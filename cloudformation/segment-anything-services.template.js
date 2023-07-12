@@ -3,7 +3,9 @@ import API from './lib/api.js';
 import GPU from './lib/gpu.js';
 import S3 from './lib/s3.js';
 import UI from './lib/ui.js';
+import KMS from './lib/kms.js';
 import Shared from './lib/shared.js';
+import CloudFront from './lib/cloudfront.js';
 import {
     ELB as ELBAlarms
 } from '@openaddresses/batch-alarms';
@@ -14,6 +16,8 @@ export default cf.merge(
     Shared,
     API,
     GPU,
+    KMS,
+    CloudFront,
     {
         Description: 'Template for @developmentseed/segment-anything-geo',
         Parameters: {

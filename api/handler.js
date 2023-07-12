@@ -1,7 +1,8 @@
 export async function handler(event) {
     console.error(event);
 
-    if (event.httpMethod === 'POST' && event.resource === '/') {
+    if (event.httpMethod === 'POST' && event.resource === '/login') {
+
     } else {
         return response({ message: 'Unimplemented Method' }, 404);
     }
