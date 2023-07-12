@@ -2,6 +2,15 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        /*
+        GPULogs: {
+            Type: 'AWS::Logs::LogGroup',
+            Properties: {
+                LogGroupName: cf.join([cf.stackName, '-cpu']),
+                RetentionInDays: 7
+            }
+        },
+        */
         GPUNoTrafficAlarm: {
             Type: 'AWS::CloudWatch::Alarm',
             Properties: {

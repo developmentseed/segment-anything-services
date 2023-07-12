@@ -1,0 +1,50 @@
+{
+    "name": "segment-anything-services-api",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "serve": "vite serve --port 8080",
+        "build": "vite build",
+        "lint": "vite lint"
+    },
+    "dependencies": {
+        "@tabler/core": "^1.0.0-beta16",
+        "@tak-ps/vue-tabler": "^3.1.1",
+        "core-js": "^3.6.4",
+        "floating-vue": "^2.0.0-beta.17",
+        "maplibre-gl": "^3.0.0",
+        "sass": "^1.49.7",
+        "sass-loader": "^13.0.0",
+        "vue": "^3.2.31",
+        "vue-router": "^4.0.14",
+        "vue-tabler-icons": "^2.16.0"
+    },
+    "devDependencies": {
+        "@babel/eslint-parser": "^7.17.0",
+        "@vitejs/plugin-vue": "^4.1.0",
+        "eslint": "^8.11.0",
+        "eslint-plugin-vue": "^9.0.0",
+        "vite": "^4.2.1"
+    },
+    "eslintConfig": {
+        "root": true,
+        "globals": {},
+        "env": {
+            "node": true
+        },
+        "extends": [
+            "plugin:vue/essential",
+            "eslint:recommended"
+        ],
+        "parserOptions": {
+            "parser": "@babel/eslint-parser"
+        },
+        "rules": {
+            "vue/multi-word-component-names": 1
+        }
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions"
+    ]
+}

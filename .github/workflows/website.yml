@@ -1,0 +1,34 @@
+name: Website Builder
+
+on:
+    push:
+      branches:
+        - main
+    pull_request:
+        types:
+            - opened
+            - synchronize
+            - reopened
+            - ready_for_review
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        if: github.event.pull_request.draft == false
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  ref: ${{github.event.pull_request.head.sha || github.sha}}
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 20
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - run: cd web && npm install && npm run build && aws s3 cp --recursive dist/ s3://segment-anything-services-prod-frontend-685980093638-us-east-1/${{github.event.pull_request.head.sha || github.sha}}/
+
