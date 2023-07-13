@@ -1,13 +1,14 @@
 function std() {
     window.stdurl = function(url) {
-        try {
-            url = new URL(url);
-        } catch (err) {
-            url = new URL(url, window.location.origin);
+        if (window.location.hostname === 'localhost') {
+            url = new URL(url, 'https://api.segmentanythingservice.com');
+        } else {
+            try {
+                url = new URL(url);
+            } catch (err) {
+                url = new URL(url, window.location.origin.replace('https://', 'https://api.'));
+            }
         }
-
-        // Allow serving through Vue for hotloading
-        if (url.hostname === 'localhost') url.port = '5001'
 
         return url;
     }

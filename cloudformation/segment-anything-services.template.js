@@ -23,6 +23,18 @@ export default cf.merge(
                 Description: 'GitSha that is currently being deployed',
                 Type: 'String'
             },
+            RootDomain: {
+                Description: 'Root Domain For the Frontend',
+                Type: 'String'
+            },
+            RootDomainCertificate: {
+                Description: 'Root Domain Certificate',
+                Type: 'String'
+            },
+            RootDomainHostedZoneId: {
+                Description: 'Root Domain Zone ID',
+                Type: 'String'
+            },
             SSLCertificateIdentifier: {
                 Description: 'ACM SSL Certificate for HTTP Protocol',
                 Type: 'String'

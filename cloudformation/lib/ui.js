@@ -2,12 +2,40 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        REstApiRoute53: {
+            Type: 'AWS::Route53::RecordSet',
+            Properties: {
+                Name: cf.join(['api.', cf.ref('RootDomain')]),
+                Type: 'A',
+                HostedZoneId: cf.ref('RootDomainHostedZoneId'),
+                AliasTarget: {
+                    DNSName: cf.getAtt('RestApiDomain', 'DistributionDomainName'),
+                    EvaluateTargetHealth: false,
+                    HostedZoneId: cf.getAtt('RestApiDomain', 'DistributionHostedZoneId')
+                }
+            }
+        },
         RestApiDeployment: {
             Type: 'AWS::ApiGateway::Deployment',
             Properties: {
                 Description: cf.stackName,
                 RestApiId: cf.ref('RestApi'),
                 StageName: cf.stackName
+            }
+        },
+        RestApiDomain: {
+            Type: 'AWS::ApiGateway::DomainName',
+            Properties: {
+                DomainName: cf.join(['api.', cf.ref('RootDomain')]),
+                CertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('RootDomainCertificate')]),
+            }
+        },
+        RestApiDomainMap: {
+            Type: 'AWS::ApiGateway::BasePathMapping',
+            Properties: {
+                DomainName: cf.ref('RestApiDomain'),
+                RestApiId: cf.ref('RestApi'),
+                Stage: cf.stackName
             }
         },
         RestApi: {
@@ -21,7 +49,7 @@ export default {
                     },
                     'x-amazon-apigateway-binary-media-types': ['*/*'],
                     'paths': {
-                        '/status': {
+                        '/login': {
                             'options': {
                                 'x-amazon-apigateway-integration': {
                                     'type': 'mock',

@@ -2,6 +2,19 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        CloudFrontRoute53: {
+            Type: 'AWS::Route53::RecordSet',
+            Properties: {
+                Name: cf.ref('RootDomain'),
+                Type: 'A',
+                HostedZoneId: cf.ref('RootDomainHostedZoneId'),
+                AliasTarget: {
+                    DNSName: cf.getAtt('CloudFrontDistribution', 'DomainName'),
+                    EvaluateTargetHealth: false,
+                    HostedZoneId: 'Z2FDTNDATAQYW2'
+                }
+            }
+        },
         CloudFrontLogS3Bucket: {
             Type: "AWS::S3::Bucket",
             Properties: {
@@ -68,8 +81,12 @@ export default {
                         },
                         ViewerProtocolPolicy: "redirect-to-https"
                     },
+                    Aliases: [
+                        cf.ref('RootDomain')
+                    ],
                     ViewerCertificate: {
-                        CloudFrontDefaultCertificate: true
+                        AcmCertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('RootDomainCertificate')]),
+                        SslSupportMethod: 'sni-only'
                     },
                 },
                 Tags: [{
