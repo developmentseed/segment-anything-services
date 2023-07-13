@@ -2,34 +2,6 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
-        RestAdminPassword: {
-            Type: 'AWS::SecretsManager::Secret',
-            Properties: {
-                Description: cf.join([cf.stackName, ' Admin Password']),
-                GenerateSecretString: {
-                    SecretStringTemplate: '{"username": "admin"}',
-                    GenerateStringKey: 'password',
-                    ExcludePunctuation: true,
-                    PasswordLength: 32
-                },
-                Name: cf.join([cf.stackName, '-password']),
-                KmsKeyId: cf.ref('KMS')
-            }
-        },
-        RestAdminSigningSecret: {
-            Type: 'AWS::SecretsManager::Secret',
-            Properties: {
-                Description: cf.join([cf.stackName, ' Signing Secret']),
-                GenerateSecretString: {
-                    SecretStringTemplate: '{}',
-                    GenerateStringKey: 'signing',
-                    ExcludePunctuation: true,
-                    PasswordLength: 32
-                },
-                Name: cf.join([cf.stackName, '-secret']),
-                KmsKeyId: cf.ref('KMS')
-            }
-        },
         RestApiDeployment: {
             Type: 'AWS::ApiGateway::Deployment',
             Properties: {
@@ -117,6 +89,8 @@ export default {
                 Timeout: 240,
                 Environment: {
                     Variables: {
+                        UserPoolId: cf.ref('UserPool'),
+                        ClientId: cf.ref('UserPoolClient'),
                         'FRONTEND_BUCKET': cf.ref('FrontendBucket'),
                     }
                 }

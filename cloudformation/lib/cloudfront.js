@@ -163,7 +163,7 @@ export default {
     Outputs: {
         CloudfrontDistributionDNS: {
             Description: "Cloudfront DNS to add to Route 53",
-            Value: cf.getAtt("CloudFrontDistribution", "DomainName")
+            Value: cf.join(['https://', cf.getAtt("CloudFrontDistribution", "DomainName")])
         },
     }
 };
