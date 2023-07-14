@@ -163,7 +163,7 @@ export default {
                             Items: ['Access-Control-Allow-Origin', 'Access-Control-Allow-Methods']
                         },
                         AccessControlAllowMethods: {
-                            Items: ['GET', 'OPTIONS'],
+                            Items: ['GET', 'OPTIONS', 'PUT', 'POST', 'PATCH', 'DELETE'],
                         },
                         AccessControlAllowOrigins: {
                             Items: ['*'],

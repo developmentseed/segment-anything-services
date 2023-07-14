@@ -64,7 +64,8 @@ export default {
                                             },
                                             'responseParameters': {
                                                 'method.response.header.Access-Control-Allow-Origin': "'*'",
-                                                'method.response.header.Access-Control-Allow-Methods': "'GET, POST, OPTIONS'"
+                                                'method.response.header.Access-Control-Allow-Methods': "'GET, POST, OPTIONS'",
+                                                'method.response.header.Access-Control-Allow-Headers': "Content-Type"
                                             }
                                         }
                                     }
