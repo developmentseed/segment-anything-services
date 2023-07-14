@@ -61,7 +61,7 @@ export default {
         createLogin: async function() {
             this.loading = true;
             try {
-                const login = await window.std('/api/login', {
+                const login = await window.std('/login', {
                     method: 'POST',
                     body: {
                         username: this.username,
