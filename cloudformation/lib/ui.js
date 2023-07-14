@@ -88,7 +88,7 @@ export default {
                                 },
                                 'produces': ['application/json']
                             },
-                            'get': {
+                            'post': {
                                 'x-amazon-apigateway-integration': {
                                     'httpMethod': 'POST',
                                     'type': 'aws_proxy',
