@@ -64,8 +64,8 @@ export default {
                 const login = await window.std('/login', {
                     method: 'POST',
                     body: {
-                        username: this.username,
-                        password: this.password
+                        Username: this.username,
+                        Password: this.password
                     }
                 });
 
