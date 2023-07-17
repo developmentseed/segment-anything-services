@@ -47,64 +47,37 @@ export default {
                         'version': '1.0',
                         'title': cf.stackName
                     },
-                    'x-amazon-apigateway-binary-media-types': ['*/*'],
                     'paths': {
                         '/login': {
                             'options': {
                                 'x-amazon-apigateway-integration': {
-                                    'type': 'mock',
-                                    'requestTemplates': {
-                                        'application/json': '{\n  "statusCode" : 200\n}\n'
-                                    },
-                                    'responses': {
-                                        'default': {
-                                            'statusCode': '200',
-                                            'responseTemplates': {
-                                                'application/json': '{}\n'
-                                            },
-                                            'responseParameters': {
-                                                'method.response.header.Access-Control-Allow-Origin': "'*'",
-                                                'method.response.header.Access-Control-Allow-Methods': "'GET, POST, OPTIONS'",
-                                                'method.response.header.Access-Control-Allow-Headers': "Content-Type"
-                                            }
-                                        }
-                                    }
+                                    'httpMethod': 'OPTIONS',
+                                    'type': 'aws_proxy',
+                                    'uri': { 'Fn::Sub': 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RestFunction.Arn}/invocations' }
                                 },
-                                'consumes': [
-                                    'application/json'
-                                ],
-                                'summary': 'CORS support',
-                                'responses': {
-                                    '200': {
-                                        'headers': {
-                                            'Access-Control-Allow-Origin': {
-                                                'type': 'string'
-                                            },
-                                            'Access-Control-Allow-Methods': {
-                                                'type': 'string'
-                                            }
-                                        },
-                                        'description': 'Default response for CORS method'
-                                    }
-                                },
-                                'produces': ['application/json']
                             },
                             'post': {
                                 'x-amazon-apigateway-integration': {
                                     'httpMethod': 'POST',
                                     'type': 'aws_proxy',
-                                    'uri': {
-                                        'Fn::Sub': 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RestFunction.Arn}/invocations'
-                                    }
+                                    'uri': { 'Fn::Sub': 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RestFunction.Arn}/invocations' }
                                 },
-                                'responses': {}
                             }
                         },
                     },
                 },
-                Description: cf.stackName,
-                BinaryMediaTypes: [ '*/*' ]
+                Description: cf.stackName
             },
+        },
+        RestFunctionCaller: {
+            Type: 'AWS::Lambda::Permission',
+            Properties: {
+                Action: 'lambda:InvokeFunction',
+                FunctionName: cf.ref('RestFunction'),
+                Principal: 'apigateway.amazonaws.com',
+                SourceAccount: cf.accountId,
+                SourceArn: cf.join(['arn:', cf.partition, ':execute-api:', cf.region, ':', cf.accountId, ':', cf.ref('RestApi'), '/*/*/*'])
+            }
         },
         RestFunction: {
             Type: 'AWS::Lambda::Function',
