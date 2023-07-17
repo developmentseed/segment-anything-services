@@ -41,33 +41,34 @@ export default {
         RestApi: {
             Type: 'AWS::ApiGateway::RestApi',
             Properties: {
-                'Body': {
-                    'swagger': '2.0',
-                    'info': {
-                        'version': '1.0',
-                        'title': cf.stackName
-                    },
-                    'paths': {
-                        '/login': {
-                            'options': {
-                                'x-amazon-apigateway-integration': {
-                                    'httpMethod': 'OPTIONS',
-                                    'type': 'aws_proxy',
-                                    'uri': { 'Fn::Sub': 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RestFunction.Arn}/invocations' }
-                                },
-                            },
-                            'post': {
-                                'x-amazon-apigateway-integration': {
-                                    'httpMethod': 'POST',
-                                    'type': 'aws_proxy',
-                                    'uri': { 'Fn::Sub': 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RestFunction.Arn}/invocations' }
-                                },
-                            }
-                        },
-                    },
-                },
+                Name: cf.stackName,
                 Description: cf.stackName
             },
+        },
+        RestApiProxyResource: {
+            Type: "AWS::ApiGateway::Resource",
+            Properties: {
+                ParentId: cf.getAtt('RestApi', 'RootResourceId'),
+                RestApiId: cf.ref('RestApi'),
+                PathPart: '{proxy+}'
+            }
+        },
+        RestApiRootMethod: {
+            Type: 'AWS::ApiGateway::Method',
+            Properties: {
+                AuthorizationType: 'NONE',
+                HttpMethod: 'ANY',
+                Integration: {
+                    IntegrationHttpMethod: 'POST',
+                    Type: 'AWS_PROXY',
+                    IntegrationResponses: [{
+                        StatusCode: 200
+                    }],
+                    Uri: { 'Fn::Sub': 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RestFunction.Arn}/invocations' }
+                },
+                ResourceId: cf.ref('RestApiProxyResource'),
+                RestApiId: cf.ref('RestApi')
+            }
         },
         RestFunctionCaller: {
             Type: 'AWS::Lambda::Permission',
