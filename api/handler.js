@@ -8,6 +8,8 @@ for (const env of ['UserPoolId', 'ClientId']) {
 export async function handler(event) {
     const cognito = new Cognito.CognitoIdentityClient();
 
+    console.error(JSON.stringify(event));
+
     if (event.httpMethod === 'OPTIONS') {
         return response({ message: 'Sent It' }, 200);
     } else if (event.httpMethod === 'POST' && event.resource === '/login') {
