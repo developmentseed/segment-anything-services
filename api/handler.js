@@ -12,7 +12,7 @@ export async function handler(event) {
 
     if (event.httpMethod === 'OPTIONS') {
         return response({ message: 'Sent It' }, 200);
-    } else if (event.httpMethod === 'POST' && event.resource === '/login') {
+    } else if (event.httpMethod === 'POST' && event.path === '/login') {
         const provider = new CognitoProvider.CognitoIdentityProvider();
 
         try {
