@@ -17,7 +17,7 @@ jobs:
         if: github.event.pull_request.draft == false
         strategy:
           matrix:
-            task: [cpu, gpu]
+            task: [cpu, gpu, api]
         steps:
             - uses: actions/checkout@v3
               with:
