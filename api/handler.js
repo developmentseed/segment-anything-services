@@ -55,6 +55,7 @@ export async function handler(event) {
                 });
             }
         } catch (err) {
+            console.error(err);
             return response({ message: err.message }, 400);
         }
     } else {
@@ -86,7 +87,7 @@ function response(body, statusCode=200) {
 if (import.meta.url === `file://${process.argv[1]}`) {
     const res = await handler({
         httpMethod: 'POST',
-        resource: '/login',
+        path: '/login',
         body: {
             Username: 'ingalls',
             Password: process.env.PASSWORD

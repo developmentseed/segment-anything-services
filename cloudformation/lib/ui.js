@@ -122,13 +122,21 @@ export default {
                         Statement: [{
                             Effect: 'Allow',
                             Action: [
+                                'cognito-idp:AdminInitiateAuth'
+                            ],
+                            Resource: [
+                                cf.getAtt('UserPool', 'Arn')
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 's3:Get*',
                                 's3:List*',
                                 's3:Head*'
                             ],
                             Resource: [
-                                cf.join(['arn:aws:s3:::', cf.ref('FrontendBucket')]),
-                                cf.join(['arn:aws:s3:::', cf.ref('FrontendBucket'), '/*'])
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('FrontendBucket')]),
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('FrontendBucket'), '/*'])
                             ]
                         }]
                     }
