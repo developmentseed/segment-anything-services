@@ -10,6 +10,14 @@ export async function handler(event) {
 
     console.error(JSON.stringify(event));
 
+    if (event.body && event.isBase64Encoded) {
+        try {
+            event.body = JSON.parse(String(Buffer.from(event.body)));
+        } catch (err) {
+            return response({ message: 'Failed to parse request body' }, 400);
+        }
+    }
+
     if (event.httpMethod === 'OPTIONS') {
         return response({ message: 'Sent It' }, 200);
     } else if (event.httpMethod === 'POST' && event.path === '/login') {
