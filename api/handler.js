@@ -61,6 +61,17 @@ export async function handler(event) {
                 const user = await provider.getUser({
                     AccessToken: auth.AuthenticationResult.AccessToken
                 });
+
+                const attrs = {};
+                for (const attr of user.UserAttributes) {
+                    attrs[attr.Name] = attr.Value;
+                }
+
+                return response({
+                    username: user.Username,
+                    email: attrs.email,
+                    token: auth.AuthenticationResult.AccessToken
+                })
             }
         } catch (err) {
             console.error(err);
