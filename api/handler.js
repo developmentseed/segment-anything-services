@@ -18,12 +18,12 @@ export async function handler(event) {
         }
     }
 
-    if (event.httpMethod === 'OPTIONS') {
-        return response({ message: 'Sent It' }, 200);
-    } else if (event.httpMethod === 'POST' && event.path === '/login') {
-        const provider = new CognitoProvider.CognitoIdentityProvider();
+    try {
+        if (event.httpMethod === 'OPTIONS') {
+            return response({ message: 'Sent It' }, 200);
+        } else if (event.httpMethod === 'POST' && event.path === '/login') {
+            const provider = new CognitoProvider.CognitoIdentityProvider();
 
-        try {
             if (event.body.ChallengeResponse) {
                 if (!event.body.ChallengeName) throw new Error('ChallengeName required');
                 if (!event.body.Session) throw new Error('Session required');
@@ -73,12 +73,36 @@ export async function handler(event) {
                     token: auth.AuthenticationResult.AccessToken
                 })
             }
-        } catch (err) {
-            console.error(err);
-            return response({ message: err.message }, 400);
         }
-    } else {
-        return response({ message: 'Unimplemented Method' }, 404);
+
+        // Auth - All Endpoints past this point require Auth
+        if (!event.headers.Authorization) throw new Error('No Authorization Header Provided');
+
+        const user = await provider.getUser({
+            AccessToken: event.headers.Authorization.split(' ')[1]
+        });
+
+        if (event.httpMethod === 'GET' && event.path === '/login') {
+            return response({
+                username: user.Username,
+                email: attrs.email
+            })
+        } else if (event.httpMethod === 'GET' && event.path === '/status') {
+            return response({
+                gpu: {
+
+                },
+                cpu: {
+
+                }
+            })
+        } else {
+            return response({ message: 'Unimplemented Method' }, 404);
+        }
+
+    } catch (err) {
+        console.error(err);
+        return response({ message: err.message }, 400);
     }
 
 }

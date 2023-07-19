@@ -48,51 +48,6 @@
                                 <span class="nav-link-title">Home</span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/connection")'>
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <NetworkIcon/>
-                                </span>
-                                <span class="nav-link-title">Connections</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/layer")'>
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <BuildingBroadcastTowerIcon/>
-                                </span>
-                                <span class="nav-link-title">Layers</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/data")'>
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <DatabaseIcon/>
-                                </span>
-                                <span class="nav-link-title">Data</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/basemap")'>
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <MapIcon/>
-                                </span>
-                                <span class="nav-link-title">Basemaps</span>
-                            </a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a id='util-dropdown' class="nav-link dropdown-toggle cursor-pointer" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <ShovelIcon/>
-                                </span>
-                                <span class="nav-link-title">Utils</span>
-                            </a>
-                            <div class="dropdown-menu" aria-labelledby="util-dropdown">
-                                <a @click='$router.push("/icon")' class="dropdown-item cursor-pointer">
-                                    Icon Explorer
-                                </a>
-                            </div>
-                        </li>
                     </ul>
 
                     <div class='ms-auto'>
@@ -126,25 +81,20 @@ import {
     HomeIcon,
     LogoutIcon,
     UserIcon,
-    MapIcon,
-    NetworkIcon,
-    DatabaseIcon,
-    BuildingBroadcastTowerIcon,
     AdjustmentsIcon,
-    ShovelIcon
 } from 'vue-tabler-icons';
 import {
     TablerError
 } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'Tak-PS-ETL',
+    name: 'SegmentAnything',
     data: function() {
         return {
             mounted: false,
             user: null,
             err: null,
-            server: null,
+            status: null,
         }
     },
     errorCaptured: function(err) {
@@ -155,7 +105,7 @@ export default {
             if (!this.mounted) return;
             if (localStorage.token) {
                 await this.getLogin();
-                if (!this.server) await this.getServer();
+                if (!this.status) await this.getServer();
                 return;
             }
             if (this.$route.name !== 'login') this.$router.push("/login");
@@ -166,7 +116,7 @@ export default {
 
         if (localStorage.token) {
             await this.getLogin();
-            await this.getServer();
+            await this.getStatus();
         } else if (this.$route.name !== 'login') {
             this.$router.push("/login");
         }
@@ -181,19 +131,15 @@ export default {
         },
         getLogin: async function() {
             try {
-                this.user = await window.std('/api/login');
+                this.user = await window.std('/login');
             } catch (err) {
                 this.user = null;
                 delete localStorage.token;
                 if (this.$route.name !== 'login') this.$router.push("/login");
             }
         },
-        getServer: async function() {
-            this.server = await window.std('/api/server');
-
-            if (this.server.status === 'unconfigured') {
-                this.$router.push("/admin");
-            }
+        getStatus: async function() {
+            this.status = await window.std('/status');
         }
     },
     components: {
@@ -201,13 +147,8 @@ export default {
         CodeIcon,
         LogoutIcon,
         UserIcon,
-        MapIcon,
-        NetworkIcon,
-        DatabaseIcon,
         TablerError,
-        BuildingBroadcastTowerIcon,
         AdjustmentsIcon,
-        ShovelIcon,
     }
 }
 </script>
