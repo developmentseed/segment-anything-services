@@ -119,7 +119,7 @@ function response(body, statusCode=200) {
         isBase64Encoded: false,
         headers: {
             'Content-Type': 'application/json',
-            "Access-Control-Allow-Headers" : "Content-Type",
+            "Access-Control-Allow-Headers" : "Content-Type,Authorization,Content-Length",
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
         },
