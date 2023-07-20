@@ -92,7 +92,9 @@ export default {
                 Timeout: 240,
                 Environment: {
                     Variables: {
+                        AssetBucket: cf.ref('AssetBucket'),
                         StackName: cf.stackName,
+                        GitSha: cf.ref('GitSha'),
                         UserPoolId: cf.ref('UserPool'),
                         ClientId: cf.ref('UserPoolClient'),
                         'FRONTEND_BUCKET': cf.ref('FrontendBucket'),
