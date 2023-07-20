@@ -64,7 +64,7 @@ export default {
         async submit() {
             try {
                 this.loading = true;
-                this.status = await window.std('/status', {
+                await window.std('/status', {
                     method: 'POST',
                     body: {
                         gpu: parseInt(this.status.gpu.desired),
@@ -72,6 +72,8 @@ export default {
                     }
                 });
                 this.loading = false;
+
+                this.$route.push('/');
             } catch (err) {
                 this.loading = false;
                 throw err;
