@@ -102,6 +102,7 @@ export async function handler(event) {
             if (event.body.gpu && !isNaN(parseInt(event.body.gpu))) {
                 cmds.push(ecs.send(new ECS.UpdateServiceCommand({
                     service: process.env.StackName + '-GPUService',
+                    cluster: `${process.env.StackName}-cluster`,
                     desiredCount: parseInt(event.body.gpu)
                 })));
             }
@@ -109,6 +110,7 @@ export async function handler(event) {
             if (event.body.cpu && !isNaN(parseInt(event.body.cpu))) {
                 cmds.push(ecs.send(new ECS.UpdateServiceCommand({
                     service: process.env.StackName + '-Service',
+                    cluster: `${process.env.StackName}-cluster`,
                     desiredCount: parseInt(event.body.cpu)
                 })));
             }
