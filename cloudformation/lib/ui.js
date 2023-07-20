@@ -139,8 +139,6 @@ export default {
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':cluster/', cf.stackName, '-cluster']),
-                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':service/default/', cf.stackName, '-Service']),
-                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':service/default/', cf.stackName, '-GPUService']),
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':service/', cf.stackName, '-cluster/', cf.stackName, '-Service']),
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':service/', cf.stackName, '-cluster/', cf.stackName, '-GPUService']),
                             ]
