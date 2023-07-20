@@ -125,7 +125,8 @@ export default {
                         Statement: [{
                             Effect: 'Allow',
                             Action: [
-                                'cognito-idp:AdminInitiateAuth'
+                                'cognito-idp:AdminInitiateAuth',
+                                'cognito-idp:AdminRespondToAuthChallenge'
                             ],
                             Resource: [
                                 cf.getAtt('UserPool', 'Arn')
