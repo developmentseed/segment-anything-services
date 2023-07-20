@@ -7,6 +7,7 @@ for (const env of ['UserPoolId', 'ClientId']) {
 
 export async function handler(event) {
     const cognito = new Cognito.CognitoIdentityClient();
+    const provider = new CognitoProvider.CognitoIdentityProvider();
 
     console.error(JSON.stringify(event));
 
@@ -22,8 +23,6 @@ export async function handler(event) {
         if (event.httpMethod === 'OPTIONS') {
             return response({ message: 'Sent It' }, 200);
         } else if (event.httpMethod === 'POST' && event.path === '/login') {
-            const provider = new CognitoProvider.CognitoIdentityProvider();
-
             if (event.body.ChallengeResponse) {
                 if (!event.body.ChallengeName) throw new Error('ChallengeName required');
                 if (!event.body.Session) throw new Error('Session required');
@@ -40,6 +39,7 @@ export async function handler(event) {
 
                 return response({ message: 'Challenge Accepted' }, 200);
             } else {
+                console.error(process.env.UserPoolId, process.env.ClientId);
                 const auth = await provider.adminInitiateAuth({
                     UserPoolId: process.env.UserPoolId,
                     ClientId: process.env.ClientId,
@@ -81,8 +81,12 @@ export async function handler(event) {
         const user = await provider.getUser({
             AccessToken: event.headers.Authorization.split(' ')[1]
         });
-
         if (event.httpMethod === 'GET' && event.path === '/login') {
+            const attrs = {};
+            for (const attr of user.UserAttributes) {
+                attrs[attr.Name] = attr.Value;
+            }
+
             return response({
                 username: user.Username,
                 email: attrs.email
@@ -137,5 +141,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         }
     });
 
-    console.error(res.body);
+    const res2 = await handler({
+        httpMethod: 'GET',
+        path: '/login',
+        headers: {
+            Authorization: `Bearer ${JSON.parse(res.body).token}`
+        }
+    });
 }
