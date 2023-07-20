@@ -73,7 +73,7 @@ export default {
                 });
                 this.loading = false;
 
-                this.$route.push('/');
+                this.$router.push('/');
             } catch (err) {
                 this.loading = false;
                 throw err;
