@@ -12,9 +12,6 @@
 
             <div v-if='user' class='ms-auto'>
                 <div class='btn-list'>
-                    <a href="/docs/" class="btn btn-dark" target="_blank" rel="noreferrer">
-                        <CodeIcon/>Docs
-                    </a>
                     <div class='dropdown'>
                         <div type="button" id="userProfileButton" data-bs-toggle="dropdown" aria-expanded="false" class='btn btn-dark'>
                             <UserIcon/>
@@ -35,38 +32,6 @@
         </div>
     </header>
 
-    <div v-if='user' class="navbar-expand-md">
-        <div class="collapse navbar-collapse" id="navbar-menu">
-            <div class="navbar navbar-light">
-                <div class="container-xl">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/")'>
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <HomeIcon/>
-                                </span>
-                                <span class="nav-link-title">Home</span>
-                            </a>
-                        </li>
-                    </ul>
-
-                    <div class='ms-auto'>
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link cursor-pointer" @click='$router.push("/admin")'>
-                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                        <AdjustmentsIcon/>
-                                    </span>
-                                    <span class="nav-link-title">Admin</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <router-view/>
 
     <TablerError v-if='err' :err='err' @close='err = null'/>
@@ -77,7 +42,6 @@
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import {
-    CodeIcon,
     HomeIcon,
     LogoutIcon,
     UserIcon,
@@ -116,7 +80,6 @@ export default {
 
         if (localStorage.token) {
             await this.getLogin();
-            await this.getStatus();
         } else if (this.$route.name !== 'login') {
             this.$router.push("/login");
         }
@@ -138,13 +101,9 @@ export default {
                 if (this.$route.name !== 'login') this.$router.push("/login");
             }
         },
-        getStatus: async function() {
-            this.status = await window.std('/status');
-        }
     },
     components: {
         HomeIcon,
-        CodeIcon,
         LogoutIcon,
         UserIcon,
         TablerError,

@@ -133,13 +133,25 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'ecs:DescribeServices'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':cluster/', cf.stackName, '-cluster']),
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':service/', cf.stackName, '-cluster/', cf.stackName, '-Service']),
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':service/', cf.stackName, '-cluster/', cf.stackName, '-GPUService']),
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 's3:Get*',
                                 's3:List*',
                                 's3:Head*'
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.ref('FrontendBucket')]),
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('FrontendBucket'), '/*'])
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('FrontendBucket'), '/*']),
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
                             ]
                         }]
                     }
