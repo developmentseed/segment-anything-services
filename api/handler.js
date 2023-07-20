@@ -152,7 +152,7 @@ export async function handler(event) {
                         Prefix: process.env.GitSha
                     }));
 
-                    res.models = list.Contents.map((key) => {
+                    res.models = (list.Contents || []).map((key) => {
                         return key.Key.replace(process.env.GitSha + '/', '')
                     });
                 })()
