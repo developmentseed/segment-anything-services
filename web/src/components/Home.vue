@@ -4,8 +4,12 @@
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
                 <div class='card'>
-                    <div class='card-header'>
+                    <div class='card-header d-flex'>
                         <h1 class='card-title'>Stack Status</h1>
+                        <div class='ms-auto btn-list'>
+                            <RefreshIcon @click='getStatus' class='cursor-pointer'/>
+                            <SettingsIcon @click='$router.push("/edit")' class='cursor-pointer'/>
+                        </div>
                     </div>
                     <div class='card-body'>
                         <TablerLoading v-if='loading'/>
@@ -106,6 +110,8 @@ import {
 } from '@tak-ps/vue-tabler'
 
 import {
+    SettingsIcon,
+    RefreshIcon,
     FileAnalyticsIcon,
 } from 'vue-tabler-icons';
 
@@ -133,6 +139,8 @@ export default {
     components: {
         Status,
         FileAnalyticsIcon,
+        SettingsIcon,
+        RefreshIcon,
         TablerInput,
         TablerLoading
     }
