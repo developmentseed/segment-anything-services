@@ -34,7 +34,8 @@ export async function handler(event) {
                     ClientId: process.env.ClientId,
                     ChallengeName: event.body.ChallengeName,
                     ChallengeResponses: {
-                        ...event.body.ChallengeResponse
+                        USERNAME: event.body.ChallengeResponse.USERNAME,
+                        NEW_PASSWORD: event.body.ChallengeResponse.NEW_PASSWORD
                     },
                     Session: event.body.Session
                 });

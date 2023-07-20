@@ -84,6 +84,7 @@ export default {
                     body: {
                         ChallengeName: this.challenge.ChallengeName,
                         ChallengeResponse: {
+                            USERNAME: this.username,
                             NEW_PASSWORD: this.password
                         },
                         Session: this.challenge.Session
@@ -95,6 +96,9 @@ export default {
                 this.loading = false;
                 throw err;
             }
+
+            this.loaing = false;
+            await this.createLogin();
         },
         createLogin: async function() {
             this.loading = true;

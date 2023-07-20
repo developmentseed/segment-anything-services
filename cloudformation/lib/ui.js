@@ -134,7 +134,8 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
-                                'ecs:DescribeServices'
+                                'ecs:DescribeServices',
+                                'ecs:UpdateService'
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':cluster/', cf.stackName, '-cluster']),
