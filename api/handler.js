@@ -83,6 +83,7 @@ export async function handler(event) {
         const user = await provider.getUser({
             AccessToken: event.headers.Authorization.split(' ')[1]
         });
+
         if (event.httpMethod === 'GET' && event.path === '/login') {
             const attrs = {};
             for (const attr of user.UserAttributes) {
@@ -93,6 +94,30 @@ export async function handler(event) {
                 username: user.Username,
                 email: attrs.email
             })
+        } else if (event.httpMethod === 'POST' && event.path === '/status') {
+            const ecs = new ECS.ECSClient({});
+
+            const cmds = [];
+            if (event.body.gpu && !isNaN(parseInt(event.body.gpu))) {
+                cmds.push(ecs.send(new ECS.UpdateServiceCommand({
+                    service: process.env.StackName + '-GPUService',
+                    desiredCount: parseInt(event.body.gpu)
+                })));
+            }
+
+            if (event.body.cpu && !isNaN(parseInt(event.body.cpu))) {
+                cmds.push(ecs.send(new ECS.UpdateServiceCommand({
+                    service: process.env.StackName + '-Service',
+                    desiredCount: parseInt(event.body.cpu)
+                })));
+            }
+
+            await Promise.all(cmds);
+
+            return {
+                message: 'Updated Services'
+            }
+
         } else if (event.httpMethod === 'GET' && event.path === '/status') {
             const ecs = new ECS.ECSClient({});
             const s3 = new S3.S3Client({});
