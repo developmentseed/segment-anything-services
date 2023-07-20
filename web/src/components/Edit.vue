@@ -6,9 +6,6 @@
                 <div class='card'>
                     <div class='card-header d-flex'>
                         <h1 class='card-title'>Edit Stack</h1>
-                        <div class='ms-auto btn-list'>
-                            <SettingsIcon @click='$router.push("/edit")' class='cursor-pointer'/>
-                        </div>
                     </div>
                     <div class='card-body'>
                         <TablerLoading v-if='loading'/>
