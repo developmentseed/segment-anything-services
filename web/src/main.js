@@ -15,6 +15,7 @@ const router = new VueRouter.createRouter({
         { path: '/', name: 'home', component: () => import('./components/Home.vue') },
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
         { path: '/edit', name: 'edit', component: () => import('./components/Edit.vue') },
+        { path: '/profile', name: 'profile', component: () => import('./components/Profile.vue') },
         { path: '/:catchAll(.*)', name: 'lost', component: () => import('./components/Lost.vue') },
     ]
 });

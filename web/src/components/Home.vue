@@ -142,7 +142,8 @@ export default {
         SettingsIcon,
         RefreshIcon,
         TablerInput,
-        TablerLoading
+        TablerLoading,
+        PageFooter
     }
 }
 </script>

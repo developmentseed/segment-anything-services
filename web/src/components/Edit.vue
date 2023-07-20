@@ -83,7 +83,8 @@ export default {
     },
     components: {
         TablerInput,
-        TablerLoading
+        TablerLoading,
+        PageFooter
     }
 }
 </script>

@@ -69,7 +69,6 @@ export default {
             if (!this.mounted) return;
             if (localStorage.token) {
                 await this.getLogin();
-                if (!this.status) await this.getServer();
                 return;
             }
             if (this.$route.name !== 'login') this.$router.push("/login");
