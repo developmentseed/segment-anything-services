@@ -12,10 +12,10 @@
                         <template v-else>
                             <div class='row'>
                                 <div class='col-12 col-md-6 mb-3'>
-                                    <TablerInput label='Username' v-model='profile.username'/>
+                                    <TablerInput disabled label='Username' v-model='profile.username'/>
                                 </div>
                                 <div class='col-12 col-md-6 mb-3'>
-                                    <TablerInput label='Email' v-model='profile.email'/>
+                                    <TablerInput disabled label='Email' v-model='profile.email'/>
                                 </div>
                             </div>
                         </template>
@@ -32,6 +32,7 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import {
+    TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 
@@ -57,6 +58,7 @@ export default {
         },
     },
     components: {
+        TablerInput,
         TablerLoading,
         PageFooter
     }
