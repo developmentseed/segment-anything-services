@@ -117,9 +117,9 @@ export async function handler(event) {
 
             await Promise.all(cmds);
 
-            return {
+            return response({
                 message: 'Updated Services'
-            }
+            })
 
         } else if (event.httpMethod === 'GET' && event.path === '/status') {
             const ecs = new ECS.ECSClient({});
