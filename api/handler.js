@@ -1,7 +1,8 @@
 import Cognito from '@aws-sdk/client-cognito-identity';
+import ECS from '@aws-sdk/client-ecs';
 import CognitoProvider from '@aws-sdk/client-cognito-identity-provider';
 
-for (const env of ['UserPoolId', 'ClientId']) {
+for (const env of ['UserPoolId', 'ClientId', 'StackName']) {
     if (!process.env[env]) throw new Error(`${env} Env Var Required`);
 }
 
@@ -92,14 +93,32 @@ export async function handler(event) {
                 email: attrs.email
             })
         } else if (event.httpMethod === 'GET' && event.path === '/status') {
-            return response({
-                gpu: {
+            const ecs = new ECS.ECSClient({});
 
-                },
-                cpu: {
+            const res = {
+                gpu: {},
+                cpu: {}
+            };
 
-                }
-            })
+            const services = await ecs.send(new ECS.DescribeServicesCommand({
+                cluster: `${process.env.StackName}-cluster`,
+                services: [
+                    `${process.env.StackName}-Service`,
+                    `${process.env.StackName}-GPUService`,
+                ]
+            }));
+
+            for (const service of services.services) {
+                const type = service.serviceName.endsWith('GPUService') ? 'gpu' : 'cpu';
+
+                res[type].pending = service.pendingCount;
+                res[type].running = service.runningCount;
+                res[type].desired = service.desiredCount;
+            }
+
+            console.error(res);
+
+            return response(res);
         } else {
             return response({ message: 'Unimplemented Method' }, 404);
         }
@@ -143,7 +162,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
     const res2 = await handler({
         httpMethod: 'GET',
-        path: '/login',
+        path: '/status',
         headers: {
             Authorization: `Bearer ${JSON.parse(res.body).token}`
         }

@@ -92,6 +92,7 @@ export default {
                 Timeout: 240,
                 Environment: {
                     Variables: {
+                        StackName: cf.stackName,
                         UserPoolId: cf.ref('UserPool'),
                         ClientId: cf.ref('UserPoolClient'),
                         'FRONTEND_BUCKET': cf.ref('FrontendBucket'),
