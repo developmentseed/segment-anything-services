@@ -115,6 +115,27 @@ docker run -it --rm \
     --gpus all sam-dev
 ```
 
+## Deployment
+
+1. Install the dependencies to deploy from npm
+
+```
+npm install -g @openaddresses/deploy
+```
+2. Set up your credentials by navigating to the AWS SSO login page, and selecting "Command Line Access" to copy the temporary credentials. paste these to `~/.aws/credentials` and rename the AWS profile (ask Ryan for this.)
+3. `touch ~/.deployrc.json` and fill it with
+```
+   {
+    "profilename": {
+        "region": "us-east-1"
+    }
+}
+```
+4. run deploy init to generate a `.deployrc.json` config for the repo. both the local and global config are needed to deploy. Fill in args when prompted based on the profile name
+5. commit and make a PR with any changes. wait for all github actions to complete so that the model archives and docker images are built
+6. `deploy update prod` to deploy changes to prod
+
+
 ### (Potentially) Frequently Asked Questions
 Q: Why two services?
 
