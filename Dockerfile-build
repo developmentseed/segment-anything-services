@@ -16,13 +16,16 @@ RUN pip install "onnxruntime==1.14.1" "onnx==1.13.1" "git+https://github.com/fac
 
 COPY handler*.py ./
 
-RUN torch-model-archiver --model-name sam_vit_h_encode --version 1.0.0 --serialized-file model-weights/sam_vit_h_4b8939.pth --handler handler_encode.py
+COPY sam_serve/ ./sam_serve/
+
+
+RUN torch-model-archiver --model-name sam_vit_h_encode --version 1.0.0 --serialized-file model-weights/sam_vit_h_4b8939.pth --handler handler_encode.py --extra-files ./sam_serve/
 
 COPY scripts ./scripts
 
 RUN python scripts/export_onnx_model.py --checkpoint model-weights/sam_vit_h_4b8939.pth --model-type vit_h --output sam_vit_h_decode.onnx
 
-RUN torch-model-archiver --model-name sam_vit_h_decode --version 1.0.0 --serialized-file sam_vit_h_decode.onnx --handler handler_decode.py
+RUN torch-model-archiver --model-name sam_vit_h_decode --version 1.0.0 --serialized-file sam_vit_h_decode.onnx --handler handler_decode.py --extra-files ./sam_serve/
 
 RUN mkdir -p /home/model-store \
     && mv *.mar /home/model-store/ \
