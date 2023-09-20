@@ -1,0 +1,49 @@
+## Namespace
+namespace: default
+
+## Enviroment, value for NODE_ENV
+environment: staging
+
+# Cloud provider
+cloudProvider: aws
+
+AWS_SSL_ARN: false
+serviceType: LoadBalancer
+
+# Domain
+domain: staging.sam.org
+adminEmail: admin@sam.org
+
+# ====================================================
+# encoder
+# ====================================================
+encoder:
+  enabled: true
+  image:
+    name: 685980093638.dkr.ecr.us-east-1.amazonaws.com/sam-service
+    tag: gpu-a198226c2ddb2271896f1e950e3b43a3d3bbac48
+  env:
+    GitSha: 47553b0190b63932d832454c044f5362be2967ab
+  persistenceDisk:
+    enabled: false
+    AWS_ElasticBlockStore_volumeID: vol-05d59eb2671da15ee
+    AWS_ElasticBlockStore_size: 100Gi
+    MODEL_DIR: /home/model-server/volume
+  nodeSelector:
+    enabled: true
+    label_key: nodegroup_type
+    label_value: g5-xlarge-ondemand
+
+decoder:
+  enabled: true
+  image:
+    name: 685980093638.dkr.ecr.us-east-1.amazonaws.com/sam-service
+    tag: cpu-e9b3d1c112f3f26838318e03f52d9f777e548054
+  env:
+    GitSha: 47553b0190b63932d832454c044f5362be2967ab
+  persistenceDisk:
+    enabled: false
+  nodeSelector:
+    enabled: true
+    label_key: nodegroup_type
+    label_value: admin

@@ -1,0 +1,26 @@
+{{- if .Values.encoder.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
+  name: {{ .Release.Name }}-encoder-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    component: encoder-service
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: http
+      protocol: TCP
+      name: https
+  type: LoadBalancer
+  selector:
+    app:  {{ .Release.Name }}-encoder-app
+{{- end }}

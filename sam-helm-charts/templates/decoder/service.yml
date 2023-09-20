@@ -1,0 +1,34 @@
+{{- if .Values.decoder.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
+  name: {{ .Release.Name }}-decoder-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    component: decoder-service
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  ports:
+    - port: 80
+      targetPort: 7080
+      protocol: TCP
+      name: "http7080"
+    # - port: 7081
+    #   targetPort: 7081
+    #   protocol: TCP
+    #   name: "http7081"
+    # - port: 7082
+    #   targetPort: 7082
+    #   protocol: TCP
+    #   name: "http7082"
+    - port: 443
+      targetPort: http
+      protocol: TCP
+      name: https
+  type: LoadBalancer
+  selector:
+    app:  {{ .Release.Name }}-decoder-app
+{{- end }}

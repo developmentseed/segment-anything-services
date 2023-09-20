@@ -1,0 +1,47 @@
+{{- if .Values.decoder.enabled -}}
+{{- if .Values.decoder.persistenceDisk.enabled -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-decoder-ebs-volume
+  namespace: {{ .Values.namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "gp2"
+  capacity:
+    storage: {{ .Values.decoder.persistenceDisk.AWS_ElasticBlockStore_size }}
+  awsElasticBlockStore:
+    volumeID: {{ .Values.decoder.persistenceDisk.AWS_ElasticBlockStore_volumeID }}
+    fsType: ext4
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-decoder-ebs-volume-clain
+  namespace: {{ .Values.namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "gp2"
+  volumeName: {{ .Release.Name }}-decoder-ebs-volume
+  resources:
+    requests:
+      storage: {{ .Values.decoder.persistenceDisk.AWS_ElasticBlockStore_size }}
+# {{- else }}
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: {{ .Release.Name }}-decoder-ebs-volume-clain
+#   namespace: {{ .Values.namespace }}
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   storageClassName: "gp2"
+#   resources:
+#     requests:
+#       storage: 20Gi
+{{- end }}
+{{- end }}

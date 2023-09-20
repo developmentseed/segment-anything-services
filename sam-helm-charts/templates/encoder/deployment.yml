@@ -1,0 +1,44 @@
+{{- if .Values.encoder.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-encoder
+  namespace: {{ .Values.namespace }}
+  labels:
+    component: encoder
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-encoder-app
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-encoder-app
+    spec:
+      containers:
+        - name: encoder
+          image: "{{ .Values.encoder.image.name }}:{{ .Values.encoder.image.tag }}"
+          command:
+            - sh
+            - -c
+            - "./start"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: GitSha
+              value: {{ .Values.encoder.env.GitSha }}
+      #     volumeMounts:
+      #       - name: sam-ebs-volume
+      #         mountPath: {{ .Values.encoder.persistenceDisk.MODEL_DIR }}
+      # volumes:
+      #   - name: sam-ebs-volume
+      #     persistentVolumeClaim:
+      #       claimName:  {{ .Release.Name }}-encoder-ebs-volume-clain
+      {{- if .Values.encoder.nodeSelector.enabled }}
+      nodeSelector:
+        {{ .Values.encoder.nodeSelector.label_key }} : {{ .Values.encoder.nodeSelector.label_value }}
+      {{- end }}
+{{- end }}
