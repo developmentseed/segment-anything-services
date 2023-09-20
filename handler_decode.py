@@ -20,10 +20,14 @@ class ModelHandler(BaseHandler):
         self.ort_session, self.device = initialize_decoder(context)
 
     def preprocess(self, data):
-        return prepare_decode_inputs(data, self.payload)
+        return prepare_decode_inputs(data)
 
     def inference(self, image_embeddings):
         if self.payload["decode_type"] == "single_point":
+            return decode_single_point(image_embeddings, self.payload, self.ort_session)
+        elif self.payload["decode_type"] == "multi_point":
+            return decode_single_point(image_embeddings, self.payload, self.ort_session)
+        elif self.payload["decode_type"] == "bbox":
             return decode_single_point(image_embeddings, self.payload, self.ort_session)
 
     def postprocess(self, masks):

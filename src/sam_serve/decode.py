@@ -15,7 +15,6 @@ import onnxruntime
 
 
 def initialize_decoder(context):
-    start = time()
     properties = context.system_properties
     model_dir = properties.get("model_dir")
     device = torch.device(
@@ -26,12 +25,10 @@ def initialize_decoder(context):
     serialized_file = context.manifest['model']['serializedFile']
     onnx_model_path = os.path.join(model_dir, serialized_file)
     ort_session = onnxruntime.InferenceSession(onnx_model_path)
-    print("XXXXX  Initialization time: ", time() - start)
     return ort_session, device
 
 
-def prepare_decode_inputs(data, payload):
-    start = time()
+def prepare_decode_inputs(data):
     row = data[0]
     payload = row.get("data") or row.get("body")
     if (
@@ -42,21 +39,22 @@ def prepare_decode_inputs(data, payload):
         and "input_label" in payload
         and "decode_type" in payload
     ):
-        image_embeddings = payload['image_embeddings']
+        if isinstance(payload['image_embeddings'], str):
+            image_embeddings = base64.b64decode(payload['image_embeddings'])
+            image_embeddings = np.frombuffer(image_embeddings, dtype=np.float32)
+            image_embeddings = image_embeddings.reshape((1, 256, 64, 64))
+            payload['image_embeddings'] = image_embeddings
+            return payload
+        else:
+            raise ValueError("image embeddings must be passed to the payload as a base64 encoded str.")
+
     else:
-        print(
+        raise ValueError(
             "one of image_shape, input_prompt, input_label, decode_type, image_embeddings payload dict keys missing."
         )
-        assert False
-    if isinstance(image_embeddings, str):
-        image_embeddings = base64.b64decode(image_embeddings)
-    image_embeddings = np.frombuffer(image_embeddings, dtype=np.float32)
-    image_embeddings = image_embeddings.reshape((1, 256, 64, 64))
-    print("XXXXX  Preprocess time: ", time() - start)
-    return image_embeddings, payload
 
 
-def decode_single_point(image_embeddings, payload, ort_session):
+def decode_single_point(payload, ort_session):
     start = time()
     resizer = ResizeLongestSide(1024)
     onnx_coord = np.concatenate(
@@ -69,7 +67,7 @@ def decode_single_point(image_embeddings, payload, ort_session):
     onnx_mask_input = np.zeros((1, 1, 256, 256), dtype=np.float32)
     onnx_has_mask_input = np.zeros(1, dtype=np.float32)
     ort_inputs = {
-        "image_embeddings": image_embeddings,
+        "image_embeddings": payload['image_embeddings'],
         "point_coords": onnx_coord,
         "point_labels": onnx_label,
         "mask_input": onnx_mask_input,

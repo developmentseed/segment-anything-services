@@ -7,7 +7,7 @@ name = "sam-serve"
 dynamic = ["version"]
 description = ''
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8,<3.11"
 license = "MIT"
 keywords = []
 authors = [
@@ -36,10 +36,33 @@ path = "src/sam_serve/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
+  "onnxruntime==1.14.1",
+  "onnx==1.13.1",
+  "segment-anything @ git+https://github.com/facebookresearch/segment-anything.git",
+  "shapely",
+  "pyproj",
+  "rasterio",
+  "torch",
+  "torchvision",
+  "numpy",
+]
+
+[tool.hatch.envs.test]
+dependencies = [
+  "onnxruntime==1.14.1",
+  "onnx==1.13.1",
+  "segment-anything @ git+https://github.com/facebookresearch/segment-anything.git",
+  "shapely",
+  "pyproj",
+  "rasterio",
+  "torch",
+  "torchvision",
+  "numpy",
   "coverage[toml]>=6.5",
   "pytest",
 ]
-[tool.hatch.envs.default.scripts]
+
+[tool.hatch.envs.test.scripts]
 test = "pytest {args:tests}"
 test-cov = "coverage run -m pytest {args:tests}"
 cov-report = [
@@ -51,8 +74,8 @@ cov = [
   "cov-report",
 ]
 
-[[tool.hatch.envs.all.matrix]]
-python = ["3.7", "3.8", "3.9", "3.10", "3.11"]
+[[tool.hatch.envs.test.matrix]]
+python = ["3.8", "3.9", "3.10"]
 
 [tool.hatch.envs.lint]
 detached = true
@@ -78,12 +101,12 @@ all = [
 ]
 
 [tool.black]
-target-version = ["py37"]
+target-version = ["py310"]
 line-length = 120
 skip-string-normalization = true
 
 [tool.ruff]
-target-version = "py37"
+target-version = "py310"
 line-length = 120
 select = [
   "A",
