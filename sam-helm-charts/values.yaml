@@ -19,6 +19,7 @@ adminEmail: admin@sam.org
 # ====================================================
 encoder:
   enabled: true
+  replicas: 0
   image:
     name: 685980093638.dkr.ecr.us-east-1.amazonaws.com/sam-service
     tag: gpu-a198226c2ddb2271896f1e950e3b43a3d3bbac48
@@ -32,10 +33,11 @@ encoder:
   nodeSelector:
     enabled: true
     label_key: nodegroup_type
-    label_value: g5-xlarge-ondemand
+    label_value: g4dn-xlarge-spot
 
 decoder:
   enabled: true
+  replicas: 0
   image:
     name: 685980093638.dkr.ecr.us-east-1.amazonaws.com/sam-service
     tag: cpu-e9b3d1c112f3f26838318e03f52d9f777e548054
@@ -46,4 +48,4 @@ decoder:
   nodeSelector:
     enabled: true
     label_key: nodegroup_type
-    label_value: admin
+    label_value: cpu-worker-spot

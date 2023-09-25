@@ -9,7 +9,7 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.encoder.replicas }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-encoder-app
