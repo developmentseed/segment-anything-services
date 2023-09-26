@@ -15,7 +15,7 @@ encoder:
   env:
     GitSha: 47553b0190b63932d832454c044f5362be2967ab
   persistenceDisk:
-    enabled: true
+    enabled: false
     AWS_ElasticBlockStore_volumeID: vol-0888a8922504d118a
     AWS_ElasticBlockStore_size: 50Gi
     MODEL_DIR: /home/model-server/volume
@@ -39,6 +39,9 @@ decoder:
     GitSha: 47553b0190b63932d832454c044f5362be2967ab
   persistenceDisk:
     enabled: false
+    AWS_ElasticBlockStore_volumeID: vol-084afed32a29fdc9a
+    AWS_ElasticBlockStore_size: 50Gi
+    MODEL_DIR: /home/model-server/volume
   nodeSelector:
     enabled: true
     label_key: nodegroup_type
