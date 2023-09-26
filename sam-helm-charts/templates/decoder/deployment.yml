@@ -27,8 +27,7 @@ spec:
             - "./start"
           ports:
             - containerPort: 7080
-            # - containerPort: 7081
-            # - containerPort: 7082
+              name: backend-http
           env:
             - name: GitSha
               value: {{ .Values.decoder.env.GitSha }}
