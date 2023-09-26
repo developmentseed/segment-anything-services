@@ -31,13 +31,13 @@ spec:
           env:
             - name: GitSha
               value: {{ .Values.encoder.env.GitSha }}
-      #     volumeMounts:
-      #       - name: sam-ebs-volume
-      #         mountPath: {{ .Values.encoder.persistenceDisk.MODEL_DIR }}
-      # volumes:
-      #   - name: sam-ebs-volume
-      #     persistentVolumeClaim:
-      #       claimName:  {{ .Release.Name }}-encoder-ebs-volume-clain
+          volumeMounts:
+            - name: sam-ebs-volume
+              mountPath: {{ .Values.encoder.persistenceDisk.MODEL_DIR }}
+      volumes:
+        - name: sam-ebs-volume
+          persistentVolumeClaim:
+            claimName:  {{ .Release.Name }}-encoder-ebs-volume-clain
       {{- if .Values.encoder.nodeSelector.enabled }}
       nodeSelector:
         {{ .Values.encoder.nodeSelector.label_key }} : {{ .Values.encoder.nodeSelector.label_value }}
