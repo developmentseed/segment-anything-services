@@ -1,0 +1,12 @@
+version: '3.4'
+services:
+  dev:
+    platform: linux/amd64
+    image: developmentseed/sam-dev:v1
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    ports:
+      - '8888:8888'
+    volumes:
+      - ./data/segment-anything-geo:/segment-anything-geo
