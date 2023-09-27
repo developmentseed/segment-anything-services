@@ -14,8 +14,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-build
+    command: "sleep 360000"
     volumes:
+      - ./model-store:/workspace
       - ./:/home/segment-anything-service
+    working_dir: /home/segment-anything-service
   cpu:
     image: developmentseed/sam-cpu:v1
     build:
@@ -23,8 +26,10 @@ services:
       dockerfile: Dockerfile-cpu
     ports:
       - '7080:7080'
+    command: "sleep 360000"
     volumes:
       - ./:/home/segment-anything-service
+    working_dir: /home/segment-anything-service
   gpu:
     image: developmentseed/sam-gpu:v1
     build:
@@ -32,5 +37,7 @@ services:
       dockerfile: Dockerfile-gpu
     ports:
       - '8080:8080'
+    command: sleep 360000
     volumes:
       - ./:/home/segment-anything-service
+    working_dir: /home/segment-anything-service

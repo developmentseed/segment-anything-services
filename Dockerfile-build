@@ -21,9 +21,9 @@ RUN python scripts/export_onnx_model.py --checkpoint model-weights/sam_vit_h_4b8
 
 RUN torch-model-archiver --model-name sam_vit_h_decode --version 1.0.0 --serialized-file sam_vit_h_decode.onnx --handler handler_decode.py
 
-RUN mkdir -p /home/model-store \
-    && mv *.mar /home/model-store/ \
-    && rm *.onnx \
-    && rm -rf model-weights
+# RUN mkdir -p /home/model-store \
+    # && mv *.mar /home/model-store/ \
+    # && rm *.onnx \
+    # && rm -rf model-weights
 
 # .mar files copied to s3 in gh action
