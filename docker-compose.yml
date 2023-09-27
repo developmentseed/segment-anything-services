@@ -8,4 +8,29 @@ services:
     ports:
       - '8888:8888'
     volumes:
-      - ./data/segment-anything-geo:/segment-anything-geo
+      - ./notebooks:/segment-anything-geo
+  build:
+    image: developmentseed/sam-build:v1
+    build:
+      context: .
+      dockerfile: Dockerfile-build
+    volumes:
+      - ./:/home/segment-anything-service
+  cpu:
+    image: developmentseed/sam-cpu:v1
+    build:
+      context: .
+      dockerfile: Dockerfile-cpu
+    ports:
+      - '7080:7080'
+    volumes:
+      - ./:/home/segment-anything-service
+  gpu:
+    image: developmentseed/sam-gpu:v1
+    build:
+      context: .
+      dockerfile: Dockerfile-gpu
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./:/home/segment-anything-service
