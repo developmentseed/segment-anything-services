@@ -1,7 +1,6 @@
 version: '3.4'
 services:
   dev:
-    platform: linux/amd64
     image: developmentseed/sam-dev:v1
     build:
       context: .
