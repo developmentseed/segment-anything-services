@@ -9,6 +9,9 @@ domain: segmentanythingservice.com
 encoder:
   enabled: true
   replicas: 1
+  serviceType: LoadBalancer
+  serviceAnnotations:
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
   image:
     name: 685980093638.dkr.ecr.us-east-1.amazonaws.com/sam-service
     tag: gpu-a198226c2ddb2271896f1e950e3b43a3d3bbac48
@@ -22,12 +25,12 @@ encoder:
   nodeSelector:
     enabled: true
     label_key: nodegroup_type
-    label_value: g4dn-xlarge-spot
+    label_value: g4dn-xlarge-ondemand
 # ====================================================
 # decoder
 # ====================================================
 decoder:
-  enabled: true
+  enabled: false
   replicas: 1
   serviceType: LoadBalancer
   serviceAnnotations:
@@ -46,3 +49,21 @@ decoder:
     enabled: true
     label_key: nodegroup_type
     label_value: cpu-worker-spot
+# ====================================================
+# Development
+# ====================================================
+dev:
+  enabled: false
+  replicas: 1
+  serviceType: LoadBalancer
+  serviceAnnotations:
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
+  image:
+    name: 685980093638.dkr.ecr.us-west-1.amazonaws.com/sam-builder
+    tag: v1
+  env:
+    GitSha: 47553b0190b63932d832454c044f5362be2967ab
+  nodeSelector:
+    enabled: true
+    label_key: nodegroup_type
+    label_value: g4dn-xlarge-ondemand

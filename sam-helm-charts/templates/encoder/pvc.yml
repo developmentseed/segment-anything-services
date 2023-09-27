@@ -29,19 +29,5 @@ spec:
   resources:
     requests:
       storage: {{ .Values.encoder.persistenceDisk.AWS_ElasticBlockStore_size }}
-# {{- else }}
-# ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: {{ .Release.Name }}-encoder-ebs-volume-clain
-#   namespace: {{ .Values.namespace }}
-# spec:
-#   accessModes:
-#     - ReadWriteOnce
-#   storageClassName: "gp2"
-#   resources:
-#     requests:
-#       storage: 20Gi
 {{- end }}
 {{- end }}
