@@ -26,7 +26,7 @@ spec:
             - -c
             - "./start"
           ports:
-            - containerPort: 7080
+            - containerPort: 8080
               name: backend-http
           env:
             - name: GitSha

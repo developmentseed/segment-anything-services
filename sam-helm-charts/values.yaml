@@ -25,12 +25,12 @@ encoder:
   nodeSelector:
     enabled: true
     label_key: nodegroup_type
-    label_value: g4dn-xlarge-ondemand
+    label_value: g4dn-xlarge-spot
 # ====================================================
 # decoder
 # ====================================================
 decoder:
-  enabled: false
+  enabled: true
   replicas: 1
   serviceType: LoadBalancer
   serviceAnnotations:
@@ -53,14 +53,14 @@ decoder:
 # Development
 # ====================================================
 dev:
-  enabled: false
+  enabled: true
   replicas: 1
   serviceType: LoadBalancer
   serviceAnnotations:
     service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
   image:
     name: 685980093638.dkr.ecr.us-west-1.amazonaws.com/sam-builder
-    tag: v1
+    tag: develop.v1
   env:
     GitSha: 47553b0190b63932d832454c044f5362be2967ab
   nodeSelector:
