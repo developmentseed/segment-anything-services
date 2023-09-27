@@ -1,0 +1,26 @@
+{{- if .Values.dev.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
+  name: {{ .Release.Name }}-dev-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    component: dev-service
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  type: {{.Values.decoder.serviceType}}
+  ports:
+    - port: 80
+      targetPort: backend-http
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: backend-http
+      protocol: TCP
+      name: https
+  selector:
+    app:  {{ .Release.Name }}-decoder-app
+{{- end }}
