@@ -28,15 +28,18 @@ torch-model-archiver \
     --version 1.0.0 \
     --serialized-file model-weights/sam_vit_h_4b8939.pth \
     --handler handler_encode.py \
-    --export-path model-store
+    --export-path model-store \
+    --force
 
 ## Decoder
 torch-model-archiver \
     --model-name sam_vit_h_decode \
     --version 1.0.0 \
     --serialized-file model-store/sam_vit_h_decode.onnx \
-    --handler handler_decode.py
-    --export-path ./model-store
+    --handler handler_decode.py \
+    --export-path ./model-store \
+    --force
+
 
 ```
 

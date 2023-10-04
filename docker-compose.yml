@@ -1,23 +1,24 @@
 version: '3.4'
 services:
-  # dev:
-  #   image: developmentseed/sam-dev:v1
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile-dev
-  #   ports:
-  #     - '8888:8888'
-  #   volumes:
-  #     - ./notebooks:/segment-anything-geo
+  dev:
+    image: developmentseed/sam-dev:v1
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    ports:
+      - '8888:8888'
+    volumes:
+      - ./notebooks:/segment-anything-geo
   build:
     image: developmentseed/sam-build:v1
     build:
       context: .
       dockerfile: Dockerfile-build
+    # command: "sleep 360000"
     command: "/bin/bash -c '
       mkdir -p /home/segment-anything-service/model-weights/ &&
       cp /workspace/model-weights/* /home/segment-anything-service/model-weights &&
-      # cp /workspace/sam_* /home/segment-anything-service/model-store/ &&
+      cp /workspace/sam_* /home/segment-anything-service/model-store/ &&
       sleep 360000'"
     volumes:
       - ./:/home/segment-anything-service
