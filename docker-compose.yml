@@ -5,45 +5,67 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-dev
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
     ports:
       - '8888:8888'
     volumes:
       - ./notebooks:/segment-anything-geo
-  build:
-    image: developmentseed/sam-build:v1
-    build:
-      context: .
-      dockerfile: Dockerfile-build
-    # command: "sleep 360000"
-    command: "/bin/bash -c '
-      mkdir -p /home/segment-anything-service/model-weights/ &&
-      cp /workspace/model-weights/* /home/segment-anything-service/model-weights &&
-      cp /workspace/sam_* /home/segment-anything-service/model-store/ &&
-      sleep 360000'"
-    volumes:
-      - ./:/home/segment-anything-service
-    working_dir: /home/segment-anything-service
-  cpu:
-    image: developmentseed/sam-cpu:v1
-    build:
-      context: .
-      dockerfile: Dockerfile-cpu
-    ports:
-      - '7080:7080'
-    command: "sleep 360000"
-    volumes:
-      - ./:/home/segment-anything-service
-      - ./model-store:/home/model-server/volume/model-store
-    working_dir: /home/segment-anything-service
-  gpu:
-    image: developmentseed/sam-gpu:v1
-    build:
-      context: .
-      dockerfile: Dockerfile-gpu
-    ports:
-      - '8080:8080'
-    command: sleep 360000
-    volumes:
-      - ./:/home/segment-anything-service
-      - ./model-store:/home/model-server/volume/model-store
-    working_dir: /home/segment-anything-service
+  # build:
+  #   image: developmentseed/sam-build:v1
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile-build
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #         - driver: nvidia
+  #           count: all
+  #           capabilities: [gpu]
+  #   # command: "sleep 360000"
+  #   command: "/bin/bash -c '
+  #     mkdir -p /home/segment-anything-service/model-weights/ &&
+  #     cp /workspace/model-weights/* /home/segment-anything-service/model-weights &&
+  #     cp /workspace/sam_* /home/segment-anything-service/model-store/ &&
+  #     sleep 360000'"
+  #   volumes:
+  #     - ./:/home/segment-anything-service
+  #   working_dir: /home/segment-anything-service
+
+  # cpu:
+  #   image: developmentseed/sam-cpu:v1
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile-cpu
+  #   ports:
+  #     - '7080:7080'
+  #   command: "sleep 360000"
+  #   volumes:
+  #     - ./:/home/segment-anything-service
+  #     - ./model-store:/home/model-server/volume/model-store
+  #   working_dir: /home/segment-anything-service
+  # gpu:
+  #   image: developmentseed/sam-gpu:v1
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile-gpu
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #         - driver: nvidia
+  #           count: all
+  #           capabilities: [gpu]
+  #   ports:
+  #     - '8080:8080'
+  #   command: sleep 360000
+  #   volumes:
+  #     - ./:/home/segment-anything-service
+  #     - ./model-store:/home/model-server/volume/model-store
+  #   working_dir: /home/segment-anything-service
