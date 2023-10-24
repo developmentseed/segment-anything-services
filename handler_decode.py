@@ -1,5 +1,8 @@
 """Custom TorchServe model handler for SAM encoder model.
 """
+import debugpy
+debugpy.listen(('0.0.0.0', 6789))
+debugpy.wait_for_client()
 from ts.torch_handler.base_handler import BaseHandler
 from sam_serve.decode import  initialize_decoder, prepare_decode_inputs, decode_single_point, mask_to_geojson, masks_to_utf8
 from sam_serve.utils import np_to_py_type

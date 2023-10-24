@@ -16,12 +16,12 @@ RUN pip install "onnxruntime==1.14.1" "onnx==1.13.1" "git+https://github.com/fac
 
 COPY handler*.py ./
 
-COPY src/sam_serve/ ./sam_serve/
+COPY src/ ./src/
 
 COPY requirements.txt ./requirements.txt
 
 # Zip up the sam_serve module
-RUN tar czf sam_serve.tar.gz -C sam_serve .
+RUN tar czf sam_serve.tar.gz -C src .
 
 RUN torch-model-archiver --model-name sam_vit_h_encode --version 1.0.0 --serialized-file model-weights/sam_vit_h_4b8939.pth --handler handler_encode.py --extra-files sam_serve.tar.gz --requirements-file requirements.txt
 
