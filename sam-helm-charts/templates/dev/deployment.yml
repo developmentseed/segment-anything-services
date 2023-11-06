@@ -1,0 +1,34 @@
+{{- if .Values.dev.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-dev
+  namespace: {{ .Values.namespace }}
+  labels:
+    component: dev
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.dev.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-dev-app
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-dev-app
+    spec:
+      containers:
+        - name: dev
+          image: "{{ .Values.dev.image.name }}:{{ .Values.dev.image.tag }}"
+          ports:
+            - containerPort: 8888
+              name: backend-http
+          env:
+            - name: GitSha
+              value: {{ .Values.dev.env.GitSha }}
+      {{- if .Values.dev.nodeSelector.enabled }}
+      nodeSelector:
+        {{ .Values.dev.nodeSelector.label_key }} : {{ .Values.dev.nodeSelector.label_value }}
+      {{- end }}
+{{- end }}

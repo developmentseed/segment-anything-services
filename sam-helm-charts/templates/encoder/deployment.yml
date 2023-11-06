@@ -9,7 +9,7 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.encoder.replicas }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-encoder-app
@@ -27,16 +27,21 @@ spec:
             - "./start"
           ports:
             - containerPort: 8080
+              name: backend-http
           env:
             - name: GitSha
               value: {{ .Values.encoder.env.GitSha }}
-      #     volumeMounts:
-      #       - name: sam-ebs-volume
-      #         mountPath: {{ .Values.encoder.persistenceDisk.MODEL_DIR }}
-      # volumes:
-      #   - name: sam-ebs-volume
-      #     persistentVolumeClaim:
-      #       claimName:  {{ .Release.Name }}-encoder-ebs-volume-clain
+          {{- if .Values.encoder.persistenceDisk.enabled -}}
+          volumeMounts:
+            - name: sam-ebs-volume
+              mountPath: {{ .Values.encoder.persistenceDisk.MODEL_DIR }}
+          {{- end }}
+      {{- if .Values.encoder.persistenceDisk.enabled -}}
+      volumes:
+        - name: sam-ebs-volume
+          persistentVolumeClaim:
+            claimName:  {{ .Release.Name }}-encoder-ebs-volume-clain
+      {{- end }}
       {{- if .Values.encoder.nodeSelector.enabled }}
       nodeSelector:
         {{ .Values.encoder.nodeSelector.label_key }} : {{ .Values.encoder.nodeSelector.label_value }}
