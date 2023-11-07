@@ -65,4 +65,4 @@ VOLUME /segment-anything-geo
 RUN conda init
 
 # Start Jupyter Lab
-CMD ["/bin/bash", "-c", "jupyter lab --allow-root --no-browser --ip 0.0.0.0 --port 8888 --notebook-dir=/segment-anything-geo"]
+CMD ["/bin/bash", "-c", "jupyter lab --allow-root --no-browser --ip 0.0.0.0 --port 8888 --notebook-dir=/segment-anything-services"]

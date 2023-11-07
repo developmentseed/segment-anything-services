@@ -15,7 +15,7 @@ services:
     ports:
       - '8888:8888'
     volumes:
-      - ./notebooks:/segment-anything-geo
+      - ./:/segment-anything-services
   build:
     image: developmentseed/sam-build:v1
     build:
