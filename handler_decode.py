@@ -102,7 +102,7 @@ class ModelHandler(BaseHandler):
         print("XXXXX  Inference time: ", time()-start)
         print("XXXXXXX ambiguous mask proposals shape for single point", masks.shape) #(512,512) for single point mask
         return masks[0], scores[0]
-    
+
     def inference_multi_point(self, image_embeddings):
         """
         Internal inference methods for multipoints
@@ -111,10 +111,11 @@ class ModelHandler(BaseHandler):
         """
         start = time()
         resizer = ResizeLongestSide(1024)
+
         payload_input_point=self.payload['input_point'] # e.g: [[500, 375], [1125, 625]]
         payload_input_label=self.payload['input_label'] # e.g: [1, 1]
         payload_image_size=self.payload.get("image_shape")
-        
+
         input_point = np.array(payload_input_point)
         input_label = np.array(payload_input_label)
         onnx_mask_input = np.zeros((1, 1, 256, 256), dtype=np.float32)
@@ -131,7 +132,7 @@ class ModelHandler(BaseHandler):
           "point_labels": onnx_label,
           "mask_input": onnx_mask_input,
           "has_mask_input": onnx_has_mask_input,
-          "orig_im_size": np.array(payload_image_size, dtype=np.float32)
+          "orig_im_size": np.array(payload_image_size, dtype=np.float32),
         }
 
         masks, scores, low_res_logits = self.ort_session.run(None, ort_inputs)
@@ -140,7 +141,7 @@ class ModelHandler(BaseHandler):
         print("XXXXXXX ambiguous mask proposals shape for multi point", masks.shape) #(512,512) for single point mask
         return masks[0], scores[0]
 
-    
+
     def mask_to_geojson(self, mask, scores):
         transform = rasterio.transform.from_bounds(*self.payload.get("bbox"), mask.shape[1], mask.shape[0])
         # A list to store all features
@@ -163,7 +164,7 @@ class ModelHandler(BaseHandler):
         # Reproject all polygons
         multipolygon_reprojected = ops.transform(transformer.transform, multi_polygon)
         multi_polygon_geojson = mapping(multipolygon_reprojected)
-        multi_polygon_geojson['properties'] = {"class_label": self.payload.get('input_label'), 
+        multi_polygon_geojson['properties'] = {"class_label": self.payload.get('input_label'),
                                                "confidence_scores": [np_to_py_type(score) for score in scores]}
         return json.dumps(multi_polygon_geojson)
 
@@ -172,7 +173,7 @@ class ModelHandler(BaseHandler):
             # it's not georeferenced, we encode the np array. otherwise it's a geojson
             masks = base64.b64encode(masks.flatten()).decode("utf-8")
         return masks
-    
+
     def handle(self, data, context):
         """
         Invoke by TorchServe for prediction request.
@@ -183,18 +184,11 @@ class ModelHandler(BaseHandler):
         """
         model_input = self.preprocess(data)
         # (N,512,512) mask input for single point, ambiguous proposals, highest conf not always best
-        payload_input_point = self.payload['input_point']
-        # payload_input_label = self.payload['input_label']
-        # # Check multipoint or single point request
-        # multipoint=[[771, 381],[771, 450]
-        # singlepoint=[771, 381]
-        if isinstance(payload_input_point[0], list):
-           print("#"*20 + " Multi Point " + "#"*20 )
-           masks, scores = self.inference_multi_point(model_input)
-        else:
-           print("#"*20 + " Single Point " + "#"*20 )
-           masks, scores = self.inference_single_point(model_input)
-
+        # Check decode type, which comes on the payload
+        if self.payload["decode_type"] == "single_point":
+          masks, scores = self.inference_single_point(model_input)
+        elif self.payload["decode_type"] == "multi_point":
+          masks, scores = self.inference_multi_point(model_input)
         # Convert to geojson
         if self.payload.get("crs") is not None and self.payload.get("bbox") is not None:
             geojsons = []
@@ -210,13 +204,13 @@ class ModelHandler(BaseHandler):
 
 def np_to_py_type(o):
     if isinstance(o, np.generic):
-        return o.item()  
+        return o.item()
     raise TypeError
 
 def open_image(input_file: Union[str, BytesIO]) -> Image:
     """
     Opens an image in binary format using PIL.Image and converts to RGB mode.
-    
+
     Supports local files or URLs.
     This operation is lazy; image will not be actually loaded until the first
     operation that needs to load it (for example, resizing), so file opening
@@ -241,7 +235,7 @@ def open_image(input_file: Union[str, BytesIO]) -> Image:
                 for i_retry in range(0,n_retries):
                     try:
                         time.sleep(retry_sleep_time)
-                        response = requests.get(input_file)        
+                        response = requests.get(input_file)
                     except Exception as e:
                         print(f'Error retrieving image {input_file} on retry {i_retry}: {e}')
                         continue
