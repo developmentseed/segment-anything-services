@@ -204,17 +204,16 @@ class ModelHandler(BaseHandler):
             if index == 0:
               all_masks, all_scores = self.inference_single_point(model_input,input_point_, input_label_)
             else:
-              masks, scores = self.inference_single_point(model_input,input_point_, input_label_)
-              all_masks = np.concatenate((all_masks, masks), axis=0)
-              all_scores = np.concatenate((all_scores, scores), axis=0)
+              single_masks, single_scores = self.inference_single_point(model_input,input_point_, input_label_)
+              all_masks = np.concatenate((all_masks, single_masks), axis=0)
+              all_scores = np.concatenate((all_scores, single_scores), axis=0)
           masks = all_masks
           scores = all_scores
 
         # Convert to geojson
         if self.payload.get("crs") is not None and self.payload.get("bbox") is not None:
             geojsons = []
-            split_masks = np.array_split(masks, masks.shape[0], axis=0)
-            for mask in split_masks: # need to clean this up and apply conversion to each ambiguous mask
+            for mask in masks: # need to clean this up and apply conversion to each ambiguous mask
                 print(f"xxxxxxxxxShape mask: {mask.shape}")
                 multipolygon = self.mask_to_geojson(mask, scores)
                 geojsons.append(multipolygon)
