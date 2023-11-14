@@ -116,6 +116,10 @@ docker run -it --rm \
 ```
 
 ### (Potentially) Frequently Asked Questions
+Q: What GPUs was this tested with?
+
+A: The encoder and decoder were tested with a 1080 Ti (Pascal) and 3090 (Ampere). Older Kepler GPUs such as K80s are not supported. See [this issue](https://github.com/developmentseed/segment-anything-services/issues/36) for guidance on adapting the docker images to work with Kepler series GPUs. 
+
 Q: Why two services?
 
 A: We're exploring cost effective ways to run image encoding in a separate, on-demand way from the CPU decoder. Eventually we'd like to remove the need for the CPU torserve on the backend and run the decoding in the browser.
