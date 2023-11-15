@@ -1,8 +1,8 @@
 import base64
 import os
-from time import time
 import numpy as np
 import torch
+import io
 from segment_anything import sam_model_registry, SamPredictor
 from ts.utils.util import PredictionException
 from sam_serve.utils import start_timer, measure_time, load_image
