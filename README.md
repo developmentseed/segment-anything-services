@@ -46,9 +46,45 @@ bash start_serve_decode_cpu.sh
 ```
 
 ### Test the encode service on the CPU
+
 The CPU service is served on 7080 by default. 8080 for the GPU service by default.
+
 ```
 curl http://127.0.0.1:7080/predictions/sam_vit_h_encode -T ./data/sample-img-fox.jpg
+```
+
+### Testing
+
+All tests in `tests/` cover the functionality of the decoder. Logic in `decode.py` is run in pytest fixtures within `conftest.py` when outputs need to be shared by different tests in `test_decode.py`.
+
+To start running the tests, make sure you have the test models. You should have the same models used during inference, including
+
+```
+(test.py3.10) (base) rave@rave-desktop:~/segment-anything-services/tests/models$ tree
+.
+├── sam_vit_h_4b8939.pth
+└── sam_vit_h_decode.onnx
+```
+
+You can get both by unzipping the .mar archives copied to `model-store` from the sam-builder container you started in the previous step. Then, move the .onnx and the .pth files to ./tests/models/
+
+```
+unzip model-store/sam_vit_h_decode.mar -d ./sam_decode_mar
+unzip model-store/sam_vit_h_encode.mar -d ./sam_encode_mar
+cp ./sam_decode_mar/sam_vit_h_decode.onnx ./tests/models/
+cp ./sam_decode_mar/sam_vit_h_4b8939.pth ./tests/models/
+```
+
+Install the testing environment with [hatch](https://hatch.pypa.io/latest/install/): `pip install hatch`
+
+Then, create the environment. I tested with Python 3.10, Python 3.11 does not work because of an onnxruntime version issue.
+
+`hatch -e test.py3.10 shell`
+
+Then, run tests with pytest
+
+```
+pytest tests
 ```
 
 ## Local Setup without Docker
@@ -62,6 +98,7 @@ aws s3 sync s3://segment-anything/model-weights/ model-weights
 ```
 
 otherwise, get checkpoints from the original repo: https://github.com/facebookresearch/segment-anything/tree/main#model-checkpoints
+
 
 ### 2a. Package the torch weights for GPU encoding
 

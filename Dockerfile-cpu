@@ -1,4 +1,4 @@
-FROM pytorch/torchserve:latest-cpu
+FROM pytorch/torchserve:0.8.2-cpu
 
 USER root
 
@@ -18,7 +18,9 @@ RUN chmod +x /home/model-server/append_memory_setting.sh \
 COPY start ./
 
 WORKDIR /home/model-server
+COPY dist/sam_serve-1.0.0-py3-none-any.whl /home/model-server
+RUN pip install /home/model-server/sam_serve-1.0.0-py3-none-any.whl
 ENV TEMP=/home/model-server/tmp
-ENV ENABLE_TORCH_PROFILER=TRUE
+ENV ENABLE_TORCH_PROFILER=FALSE
 
 CMD ./start

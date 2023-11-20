@@ -26,6 +26,9 @@ dependencies:
         - torch-model-archiver
         - httpx
         - pillow
+        - pytest
+        - pyproj
+        - shapely
         # - torch==2.0
         # - pytorch-lightning==2.0
         # - torchvision

@@ -35,3 +35,9 @@ notebooks/sampled2_dataframe_with_zeroshot_masks.csv
 notebooks/sampled_dataframe_with_zeroshot_masks.csv
 notebooks/segment.gpkg
 notebooks/tmp.py
+notebooks/burn_embeds.npz
+sam_decode_mar/
+scripts/save_npz_embeds.py
+src/sam_serve/__pycache__/
+tests/__pycache__/
+
