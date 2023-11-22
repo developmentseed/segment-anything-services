@@ -82,6 +82,41 @@ def single_point_payload(image_embeddings_as_str):
     return payload
 
 @pytest.fixture(scope="session")
+def multi_point_payload(image_embeddings_as_str):
+    input_points_on_slick = [(6, 120), (7,120)]
+    data = [
+        {
+            "data": {
+                "image_embeddings": image_embeddings_as_str,
+                "image_shape": [512, 512],
+                "input_prompt": input_points_on_slick,
+                "input_label": [1,1],
+                "decode_type": "single_point",
+            }
+        }
+    ]
+
+    payload = decode.prepare_decode_inputs(data)
+    return payload
+
+# @pytest.fixture(scope="session")
+# def multi_point_split_payload(image_embeddings_as_str):
+#     input_points_on_slick = [(6, 120), (7, 120)]
+#     data = [
+#         {
+#             "data": {
+#                 "image_embeddings": image_embeddings_as_str,
+#                 "image_shape": [512, 512],
+#                 "input_prompt": input_points_on_slick,
+#                 "input_label": 1,
+#                 "decode_type": "single_point",
+#             }
+#         }
+#     ]
+#     payload = decode.prepare_decode_inputs(data)
+#     return payload
+
+@pytest.fixture(scope="session")
 def geojsons_and_scores(geo_image_embeddings_as_str, ort_device):
     input_point_on_burn = (220, 120)
     data = [
@@ -102,7 +137,7 @@ def geojsons_and_scores(geo_image_embeddings_as_str, ort_device):
     # https://github.com/facebookresearch/segment-anything/blob/6fdee8f2727f4506cfbbe553e23b895e27956588/segment_anything/predictor.py#L245
     single_point_payload = decode.prepare_decode_inputs(data)
     ort_session, _ =  ort_device
-    masks, scores = decode.decode_single_point(single_point_payload, ort_session)
+    masks, scores = decode.decode_single_point(single_point_payload, ort_session, single_point_payload['input_prompt'], single_point_payload['input_label'])
     geojsons = []
     for mask in masks:
         multipolygon = decode.mask_to_geojson(mask, scores, single_point_payload)

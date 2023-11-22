@@ -1,5 +1,4 @@
 from sam_serve import decode  # Adjust the import based on your actual module structure
-import numpy as np
 import pytest
 import json
 import os
@@ -22,12 +21,23 @@ def test_prepare_decode_inputs(single_point_payload):
 # Test for decode_single_point function
 def test_decode_single_point(single_point_payload, ort_device):
     ort_session, _ =  ort_device
-    masks, scores = decode.decode_single_point(single_point_payload, ort_session)
+    masks, scores = decode.decode_single_point(single_point_payload, ort_session, single_point_payload['input_prompt'], single_point_payload['input_label'])
     # the decoder was converted to onnx with return_single_mask=False see the scripts/export_onnx_model.py
     # see https://arxiv.org/pdf/2304.02643.pdf for details
     # this means there will always be 4 mask predictions so shape is 4
     assert masks.shape == (4, 512, 512)
 
+# Test for decode_single_point function
+def test_decode_multi_point(multi_point_payload, ort_device):
+    ort_session, _ =  ort_device
+    masks, scores = decode.decode_multi_point(multi_point_payload, ort_session)
+    assert masks.shape == (4, 512, 512)
+
+# Test for decode_single_point function
+def test_decode_multi_point_split(multi_point_payload, ort_device):
+    ort_session, _ =  ort_device
+    masks, scores = decode.decode_multi_point_split(multi_point_payload, ort_session)
+    assert masks.shape == (2, 4, 512, 512)
 
 # Test for mask_to_geojson function
 def test_handle_mask_to_geojson(geojsons_and_scores):

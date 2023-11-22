@@ -7,7 +7,7 @@ name = "sam-serve"
 dynamic = ["version"]
 description = ''
 readme = "README.md"
-requires-python = ">=3.8,<3.11"
+requires-python = ">=3.8,<3.12"
 license = "MIT"
 keywords = []
 authors = [

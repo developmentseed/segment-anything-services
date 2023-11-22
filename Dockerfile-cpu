@@ -8,7 +8,7 @@ RUN apt update \
     && unzip awscliv2.zip \
     && ./aws/install
 
-RUN pip install "onnxruntime==1.14.1" "onnx==1.13.1" "git+https://github.com/facebookresearch/segment-anything.git" "shapely" "pyproj" "rasterio" "debugpy"
+RUN pip install "onnxruntime==1.14.1" "onnx==1.13.1" "git+https://github.com/facebookresearch/segment-anything.git" "shapely" "pyproj" "rasterio"
 
 COPY ./deployment/config_decode.properties /home/model-server/config.properties
 COPY ./deployment/append_memory_setting.sh /home/model-server/append_memory_setting.sh

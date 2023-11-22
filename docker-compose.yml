@@ -5,15 +5,29 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-dev
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
     ports:
       - '8888:8888'
     volumes:
-      - ./notebooks:/segment-anything-geo
+      - ./:/segment-anything-services
   build:
     image: developmentseed/sam-build:v1
     build:
       context: .
       dockerfile: Dockerfile-build
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
     # command: "sleep 360000"
     command: "/bin/bash -c '
       mkdir -p /home/segment-anything-service/model-weights/ &&
@@ -23,6 +37,7 @@ services:
     volumes:
       - ./:/home/segment-anything-service
     working_dir: /home/segment-anything-service
+
   cpu:
     image: developmentseed/sam-cpu:v1
     build:
@@ -40,6 +55,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-gpu
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu]
     ports:
       - '8080:8080'
     command: sleep 360000
