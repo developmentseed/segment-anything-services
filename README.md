@@ -118,7 +118,7 @@ docker run -it --rm \
 ### (Potentially) Frequently Asked Questions
 Q: What GPUs was this tested with?
 
-A: The encoder and decoder were tested with a 1080 Ti (Pascal) and 3090 (Ampere). Older Kepler GPUs such as K80s are not supported. See [this issue](https://github.com/developmentseed/segment-anything-services/issues/36) for guidance on adapting the docker images to work with Kepler series GPUs. 
+A: The encoder and decoder are tested locally with a 1080 Ti (Pascal) and 3090 (Ampere). In production, the encoder runs on a p3.2xlarge (Tesla V100). Older Kepler GPUs such as K80s are not tested. See [this issue](https://github.com/developmentseed/segment-anything-services/issues/36) for guidance on adapting the docker images to work with Kepler series GPUs.
 
 Q: Why two services?
 
@@ -127,6 +127,20 @@ A: We're exploring cost effective ways to run image encoding in a separate, on-d
 Q: Can I contribute or ask questions?
 
 A: This is currently more of a "working in the open" type repo that we'd like to share with others, rather than a maintained project. But feel free to open an issue if you have an idea. Please understand if we don't respond or are slow to respond.
+
+### Contributing and packaging
+
+We use hatch to build the sam-serve package. This wheel file is built from source when building the cpu or gpu docker images. We also use hatch to publish the package to PYPI. We don't have CI CD yet, so if you are interested in contributing, increment the version in your PR and notify the maintainers @rbavery or @rub21 and we will publish the package on PR merge.
+
+The main commands are
+
+`hatch build` to make the whl file
+
+`hatch publish` to publish a release
+
+hatch can be installed with pip or pipx
+
+`pip install hatch`
 
 ## License
 
