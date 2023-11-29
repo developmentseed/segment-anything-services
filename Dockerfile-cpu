@@ -16,7 +16,7 @@ RUN chmod +x /home/model-server/append_memory_setting.sh \
     && /home/model-server/append_memory_setting.sh
 RUN pip install hatch
 
-WORKDIR src/sam_serve/
+WORKDIR /home/model-server
 COPY start ./
 COPY pyproject.toml .
 COPY src/ src/
