@@ -6,7 +6,7 @@ from sam_serve.decode import (
     prepare_decode_inputs,
     decode_single_point,
     decode_multi_point,
-    decode_multi_split,
+    decode_multi_point_split,
     mask_to_geojson,
     masks_to_utf8,
 )
@@ -33,11 +33,13 @@ class ModelHandler(BaseHandler):
 
     def inference(self, payload):
         if payload["decode_type"] == "single_point":
-            return decode_single_point(payload, self.ort_session)
+            input_label = payload['input_label'][0]
+            input_point = payload['input_prompt'][0]
+            return decode_single_point(payload, self.ort_session, input_point, input_label)
         elif payload["decode_type"] == "multi_point":
             return decode_multi_point(payload, self.ort_session)
         elif payload["decode_type"] == "bbox":
-            return decode_multi_split(payload, self.ort_session)
+            return decode_multi_point_split(payload, self.ort_session)
 
     def handle(self, data, context):
         """
