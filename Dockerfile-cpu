@@ -14,14 +14,9 @@ COPY ./deployment/config_decode.properties /home/model-server/config.properties
 COPY ./deployment/append_memory_setting.sh /home/model-server/append_memory_setting.sh
 RUN chmod +x /home/model-server/append_memory_setting.sh \
     && /home/model-server/append_memory_setting.sh
-RUN pip install hatch
 
 WORKDIR /home/model-server
 COPY start ./
-COPY pyproject.toml .
-COPY src/ src/
-COPY README.md .
-RUN hatch build
 ENV TEMP=/home/model-server/tmp
 ENV ENABLE_TORCH_PROFILER=FALSE
 

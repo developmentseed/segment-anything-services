@@ -1,4 +1,4 @@
-FROM pytorch/torchserve:0.8.2-gpu
+FROM pytorch/torchserve:latest-gpu
 
 USER root
 
@@ -14,16 +14,11 @@ COPY ./deployment/config_encode.properties /home/model-server/config.properties
 COPY ./deployment/append_memory_setting.sh /home/model-server/append_memory_setting.sh
 RUN chmod +x /home/model-server/append_memory_setting.sh \
     && /home/model-server/append_memory_setting.sh
-RUN pip install hatch
+
+COPY start ./
 
 WORKDIR /home/model-server
-COPY start ./
-COPY pyproject.toml .
-COPY src/ src/
-COPY README.md .
-RUN hatch build
-
 ENV TEMP=/home/model-server/volume/tmp
-ENV ENABLE_TORCH_PROFILER=FALSE
+ENV ENABLE_TORCH_PROFILER=TRUE
 
 CMD ./start
