@@ -14,12 +14,15 @@ COPY ./deployment/config_encode.properties /home/model-server/config.properties
 COPY ./deployment/append_memory_setting.sh /home/model-server/append_memory_setting.sh
 RUN chmod +x /home/model-server/append_memory_setting.sh \
     && /home/model-server/append_memory_setting.sh
+RUN pip install hatch
 
 COPY start ./
+COPY pyproject.toml ./
+COPY src/ ./src/
+COPY README.md ./
+RUN hatch build
 
 WORKDIR /home/model-server
-COPY dist/sam_serve-1.1.0-py3-none-any.whl /home/model-server
-RUN pip install /home/model-server/sam_serve-1.1.0-py3-none-any.whl
 ENV TEMP=/home/model-server/volume/tmp
 ENV ENABLE_TORCH_PROFILER=FALSE
 
