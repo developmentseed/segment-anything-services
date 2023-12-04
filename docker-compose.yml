@@ -17,7 +17,7 @@ services:
     volumes:
       - ./:/segment-anything-services
   build:
-    image: developmentseed/sam-build:v1
+    image: developmentseed/sam-build:latest
     build:
       context: .
       dockerfile: Dockerfile-build
@@ -28,30 +28,33 @@ services:
           - driver: nvidia
             count: all
             capabilities: [gpu]
-    # command: "sleep 360000"
     command: "/bin/bash -c '
+      set -x
       mkdir -p /home/segment-anything-service/model-weights/ &&
       cp /workspace/model-weights/* /home/segment-anything-service/model-weights &&
-      cp /workspace/sam_* /home/segment-anything-service/model-store/ &&
-      sleep 360000'"
+      cp /workspace/sam_* /home/segment-anything-service/model-store/'"
     volumes:
       - ./:/home/segment-anything-service
     working_dir: /home/segment-anything-service
-
   cpu:
-    image: developmentseed/sam-cpu:v1
+    image: developmentseed/sam-cpu:latest
     build:
       context: .
       dockerfile: Dockerfile-cpu
     ports:
       - '7080:7080'
-    command: "sleep 360000"
     volumes:
       - ./:/home/segment-anything-service
       - ./model-store:/home/model-server/volume/model-store
     working_dir: /home/segment-anything-service
+    command: "/bin/bash -c '
+      set -x
+      ./deployment/append_memory_setting.sh &&
+      torchserve --foreground --ts-config ./deployment/config_decode.properties'"
+    depends_on:
+      - build
   gpu:
-    image: developmentseed/sam-gpu:v1
+    image: developmentseed/sam-gpu:latest
     build:
       context: .
       dockerfile: Dockerfile-gpu
@@ -64,8 +67,13 @@ services:
             capabilities: [gpu]
     ports:
       - '8080:8080'
-    command: sleep 360000
     volumes:
       - ./:/home/segment-anything-service
       - ./model-store:/home/model-server/volume/model-store
     working_dir: /home/segment-anything-service
+    command: "/bin/bash -c '
+      set -x
+      ./deployment/append_memory_setting.sh &&
+      torchserve --foreground --ts-config ./deployment/config_encode.properties'"
+    depends_on:
+      - build
