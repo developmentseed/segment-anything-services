@@ -1,0 +1,41 @@
+{{- if .Values.decoder.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    {{- if eq .Values.decoder.serviceType "LoadBalancer" }}
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
+    {{- end }}
+    {{- if and (eq .Values.decoder.serviceType "LoadBalancer") .Values.AWS_SSL_ARN }}
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: {{ .Values.AWS_SSL_ARN }}
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: https
+    {{- end }}
+    {{- if eq .Values.decoder.serviceType "ClusterIP" }}
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod-issuer
+    {{- end }}
+    {{- with .Values.decoder.serviceAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  name: {{ .Release.Name }}-decoder-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    component: decoder-service
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  type: {{.Values.decoder.serviceType}}
+  ports:
+    - port: 80
+      targetPort: backend-http
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: backend-http
+      protocol: TCP
+      name: https
+
+  selector:
+    app:  {{ .Release.Name }}-decoder-app
+{{- end }}
