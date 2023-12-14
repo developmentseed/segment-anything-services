@@ -1,9 +1,9 @@
 name: Deploy stack in k8s
 on:
-  push:
   workflow_run:
-    workflows: ["AWS ECR Builder", "AWS Model Builder"]
-    types: [completed]
+    workflows: ["AWS ECR Builder"]
+    types:
+      - completed
 jobs:
   k8s:
     runs-on: ubuntu-22.04
