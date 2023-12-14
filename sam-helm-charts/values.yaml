@@ -14,9 +14,9 @@ encoder:
     service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
   image:
     name: 685980093638.dkr.ecr.us-east-1.amazonaws.com/sam-service
-    tag: gpu-6a4183a9fd8b5ae33d9a8b30a474ed7f27d6a312
+    tag: gpu-9f21a4918e0ead256221e0524a9ebefe7ddcc55b
   env:
-    GitSha: 6a4183a9fd8b5ae33d9a8b30a474ed7f27d6a312
+    GitSha: 9f21a4918e0ead256221e0524a9ebefe7ddcc55b
   persistenceDisk:
     enabled: false
     AWS_ElasticBlockStore_volumeID: vol-0888a8922504d118a
@@ -25,7 +25,7 @@ encoder:
   nodeSelector:
     enabled: true
     label_key: nodegroup_type
-    label_value: g4dn-xlarge-spot
+    label_value: g4dn-xlarge-ondemand
 # ====================================================
 # decoder
 # ====================================================
@@ -37,9 +37,9 @@ decoder:
     service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
   image:
     name: 685980093638.dkr.ecr.us-east-1.amazonaws.com/sam-service
-    tag: cpu-6a4183a9fd8b5ae33d9a8b30a474ed7f27d6a312
+    tag: cpu-9f21a4918e0ead256221e0524a9ebefe7ddcc55b
   env:
-    GitSha: 6a4183a9fd8b5ae33d9a8b30a474ed7f27d6a312
+    GitSha: 9f21a4918e0ead256221e0524a9ebefe7ddcc55b
   persistenceDisk:
     enabled: false
     AWS_ElasticBlockStore_volumeID: vol-084afed32a29fdc9a
