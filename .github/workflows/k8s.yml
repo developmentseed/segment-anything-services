@@ -1,7 +1,7 @@
 name: Deploy stack in k8s
 on:
   workflow_run:
-    workflows: ["AWS ECR Builder"]
+    workflows: ["AWS ECR Builder", "AWS Model Builder"]
     types:
       - completed
 jobs:
@@ -36,10 +36,6 @@ jobs:
       - name: Update kube-config
         if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
         run: aws eks --region us-west-1 update-kubeconfig --name devseed-k8s-staging
-
-      - name: Update kube-config
-        if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
-        run: kubectl get pods
 
       - name: Update values.yaml
         run: cat sam-helm-charts/values.yaml
