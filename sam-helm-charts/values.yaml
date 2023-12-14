@@ -1,0 +1,51 @@
+## Namespace
+namespace: default
+cloudProvider: aws
+AWS_SSL_ARN: arn:aws:acm:us-west-1:685980093638:certificate/a4ea3620-d410-456b-ad13-a78fe0de9b9b
+domain: segmentanythingservice.com
+# ====================================================
+# encoder
+# ====================================================
+encoder:
+  enabled: true
+  replicas: 1
+  serviceType: LoadBalancer
+  serviceAnnotations:
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
+  image:
+    name: 685980093638.dkr.ecr.us-east-1.amazonaws.com/sam-service
+    tag: gpu-9f21a4918e0ead256221e0524a9ebefe7ddcc55b
+  env:
+    GitSha: 9f21a4918e0ead256221e0524a9ebefe7ddcc55b
+  persistenceDisk:
+    enabled: false
+    AWS_ElasticBlockStore_volumeID: vol-0888a8922504d118a
+    AWS_ElasticBlockStore_size: 50Gi
+    MODEL_DIR: /home/model-server/volume
+  nodeSelector:
+    enabled: true
+    label_key: nodegroup_type
+    label_value: g4dn-xlarge-ondemand
+# ====================================================
+# decoder
+# ====================================================
+decoder:
+  enabled: true
+  replicas: 1
+  serviceType: LoadBalancer
+  serviceAnnotations:
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
+  image:
+    name: 685980093638.dkr.ecr.us-east-1.amazonaws.com/sam-service
+    tag: cpu-9f21a4918e0ead256221e0524a9ebefe7ddcc55b
+  env:
+    GitSha: 9f21a4918e0ead256221e0524a9ebefe7ddcc55b
+  persistenceDisk:
+    enabled: false
+    AWS_ElasticBlockStore_volumeID: vol-084afed32a29fdc9a
+    AWS_ElasticBlockStore_size: 50Gi
+    MODEL_DIR: /home/model-server/volume
+  nodeSelector:
+    enabled: true
+    label_key: nodegroup_type
+    label_value: cpu-worker-spot-2x
