@@ -38,7 +38,7 @@ class ModelHandler(BaseHandler):
             return decode_single_point(payload, self.ort_session, input_point, input_label)
         elif payload["decode_type"] == "multi_point":
             return decode_multi_point(payload, self.ort_session)
-        elif payload["decode_type"] == "bbox":
+        elif payload["decode_type"] == "multi_point_split":
             return decode_multi_point_split(payload, self.ort_session)
 
     def handle(self, data, context):
