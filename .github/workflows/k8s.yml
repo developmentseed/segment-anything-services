@@ -1,0 +1,58 @@
+name: Deploy stack in k8s
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  workflow_run:
+    workflows: ["AWS ECR Builder", "AWS Model Builder"]
+    types:
+      - completed
+jobs:
+  k8s:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
+
+      - name: Get Git SHA
+        run: echo "GIT_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Update values.yaml
+        run: sed -i 's/gitsha-placeholder/${{ env.GIT_SHA }}/g' sam-helm-charts/values.yaml
+
+      - name: AWS Credentials
+        if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-1
+
+      - name: Setup Kubectl and Helm Dependencies
+        if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
+        run: "sudo pip install awscli --ignore-installed six\nsudo curl -L -o /usr/bin/kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/kubectl\nsudo chmod +x /usr/bin/kubectl\nsudo curl -o /usr/bin/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/aws-iam-authenticator\nsudo chmod +x /usr/bin/aws-iam-authenticator\nwget https://get.helm.sh/helm-v3.5.0-linux-amd64.tar.gz -O helm.tar.gz\ntar -xvzf helm.tar.gz\nsudo mv linux-amd64/helm /usr/local/bin/ \nsudo chmod +x /usr/local/bin/helm\n #magic___^_^___line\n"
+
+      - name: Update kube-config
+        if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
+        run: aws eks --region us-west-1 update-kubeconfig --name devseed-k8s-staging
+
+      - name: Update values.yaml
+        run: cat sam-helm-charts/values.yaml
+
+      - name: Staging - helm deploy
+        if: github.ref == 'refs/heads/staging'
+        run: cd sam-helm-charts/ && helm upgrade staging . -i -f values.yaml --set environment=staging
+
+      - name: Production - helm deploy
+        if: github.ref == 'refs/heads/main'
+        run: cd sam-helm-charts/ && helm upgrade production . -i -f values.yaml --set environment=production

@@ -1,0 +1,49 @@
+{{- if .Values.decoder.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-decoder
+  namespace: {{ .Values.namespace }}
+  labels:
+    component: decoder
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.decoder.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-decoder-app
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-decoder-app
+    spec:
+      containers:
+        - name: decoder
+          image: "{{ .Values.decoder.image.name }}:{{ .Values.decoder.image.tag }}"
+          command:
+            - sh
+            - -c
+            - "./start"
+          ports:
+            - containerPort: 7080
+              name: backend-http
+          env:
+            - name: GitSha
+              value: {{ .Values.decoder.env.GitSha }}
+          {{- if .Values.decoder.persistenceDisk.enabled -}}
+          volumeMounts:
+            - name: sam-ebs-volume
+              mountPath: {{ .Values.decoder.persistenceDisk.MODEL_DIR }}
+          {{- end }}
+      {{- if .Values.decoder.persistenceDisk.enabled -}}
+      volumes:
+        - name: sam-ebs-volume
+          persistentVolumeClaim:
+            claimName:  {{ .Release.Name }}-decoder-ebs-volume-clain
+      {{- end }}
+      {{- if .Values.decoder.nodeSelector.enabled }}
+      nodeSelector:
+        {{ .Values.decoder.nodeSelector.label_key }} : {{ .Values.decoder.nodeSelector.label_value }}
+      {{- end }}
+{{- end }}
