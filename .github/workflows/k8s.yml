@@ -44,7 +44,7 @@ jobs:
         run: aws eks --region us-west-1 update-kubeconfig --name devseed-k8s-staging
 
       - name: Staging - helm deploy
-        if: github.ref !== 'refs/heads/main'
+        if: github.ref != 'refs/heads/main'
         run: cd sam-helm-charts/ && helm upgrade staging . -i -f values.yaml --set environment=staging
 
       - name: Production - helm deploy
