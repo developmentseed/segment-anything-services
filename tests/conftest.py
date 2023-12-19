@@ -69,8 +69,8 @@ def single_point_payload(image_embeddings_as_str):
             "data": {
                 "image_embeddings": image_embeddings_as_str,
                 "image_shape": [512, 512],
-                "input_prompt": input_point_on_slick,
-                "input_label": 1,
+                "input_prompt": [input_point_on_slick],
+                "input_label": [1],
                 "decode_type": "single_point",
             }
         }

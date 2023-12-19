@@ -1,1 +1,1 @@
-docker run -it --rm -p 7080:7080 -p 7081:7081 -p 7082:7082 -v $(pwd)/model-store/:/home/model-server/volume/model-store/ sam-cpu:latest sh -c "cd /home/model-server && mkdir -p volume/tmp && torchserve --foreground --ts-config ./config.properties"
+docker run -it --rm -p 7080:7080 -p 7081:7081 -p 7082:7082 -v $(pwd)/model-store/:/home/model-server/volume/model-store/ sam-cpu-test:latest sh -c "cd /home/model-server && mkdir -p volume/tmp && torchserve --foreground --ts-config ./config.properties"
