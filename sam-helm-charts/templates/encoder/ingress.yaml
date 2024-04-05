@@ -1,0 +1,26 @@
+{{- if and .Values.encoder.enabled (eq .Values.serviceType "ClusterIP") }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-encoder-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod-issuer
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - k8s-encoder.{{ .Values.domain }}
+    secretName: {{ .Release.Name }}-encoder-secret
+  rules:
+  - host: k8s-encoder.{{ .Values.domain }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-encoder-service
+            port:
+              number: 80
+{{- end }}

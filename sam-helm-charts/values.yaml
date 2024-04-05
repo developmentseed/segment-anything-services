@@ -1,22 +1,23 @@
 ## Namespace
 namespace: default
 cloudProvider: aws
-AWS_SSL_ARN: arn:aws:acm:us-west-1:685980093638:certificate/a4ea3620-d410-456b-ad13-a78fe0de9b9b
+AWS_SSL_ARN: arn:aws:acm...
 domain: segmentanythingservice.com
+serviceType: ClusterIP
+adminEmail: admin@segmentanythingservice.com
 # ====================================================
 # encoder
 # ====================================================
 encoder:
   enabled: true
   replicas: 1
-  serviceType: LoadBalancer
   serviceAnnotations:
     service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
   image:
     name: 685980093638.dkr.ecr.us-east-1.amazonaws.com/sam-service
-    tag: gpu-gitsha-placeholder
+    tag: gpu-93bcdf95e95607a71171ad636889ae4e97608283
   env:
-    GitSha: gitsha-placeholder
+    GitSha: 93bcdf95e95607a71171ad636889ae4e97608283
   persistenceDisk:
     enabled: false
     AWS_ElasticBlockStore_volumeID: vol-0888a8922504d118a
@@ -32,14 +33,13 @@ encoder:
 decoder:
   enabled: true
   replicas: 1
-  serviceType: LoadBalancer
   serviceAnnotations:
     service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
   image:
     name: 685980093638.dkr.ecr.us-east-1.amazonaws.com/sam-service
-    tag: cpu-gitsha-placeholder
+    tag: cpu-93bcdf95e95607a71171ad636889ae4e97608283
   env:
-    GitSha: gitsha-placeholder
+    GitSha: 93bcdf95e95607a71171ad636889ae4e97608283
   persistenceDisk:
     enabled: false
     AWS_ElasticBlockStore_volumeID: vol-084afed32a29fdc9a
@@ -48,4 +48,4 @@ decoder:
   nodeSelector:
     enabled: true
     label_key: nodegroup_type
-    label_value: cpu-worker-spot-2x
+    label_value: cpu-worker-ondemand
