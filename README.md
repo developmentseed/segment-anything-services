@@ -1,3 +1,6 @@
+# Deprecation Notice
+This has been deprecated, check out the new open source backend for the geospatial imagery annotation tool [DS-Annotate](https://github.com/developmentseed/ds-annotate), https://github.com/GeoCompas/samgeo-service by [GeoCompas](https://geocompas.ai/)!
+
 # Segment Anything Encoder and Decoder as Services
 
 ![Oil slick captured by Sentinel-1 Segmented](slick_example.png)
