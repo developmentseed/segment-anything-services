@@ -19,7 +19,7 @@ jobs:
           matrix:
             task: [cpu, gpu, api]
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
               with:
                   ref: ${{github.event.pull_request.head.sha || github.sha}}
 
@@ -27,7 +27,7 @@ jobs:
               run: docker build -t segment-${{ matrix.task }} . -f Dockerfile-${{matrix.task}}
 
             - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v1
+              uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1
               with:
                   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -35,7 +35,7 @@ jobs:
 
             - name: Login to Amazon ECR
               id: login-ecr
-              uses: aws-actions/amazon-ecr-login@v1
+              uses: aws-actions/amazon-ecr-login@5a88a04c91d5c6f97aae0d9be790e64d9b1d47b7 # v1
 
             - name: Docker Tag API
               run: docker tag segment-${{matrix.task}} ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/sam-service:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
